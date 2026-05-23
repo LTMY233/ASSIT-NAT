@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "http_client.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -191,7 +192,6 @@ void HttpClient::handleButton(ButtonEvent ev) {
 
 void HttpClient::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "HTTP Client");
 
     // URL (possibly truncated)
     char dispUrl[22];
@@ -206,7 +206,7 @@ void HttpClient::draw(U8G2& u8g2) {
 
     if (fetching) {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 44, "Fetching...");
+        drawCN(u8g2, 0, 44, "获取中...");
     } else if (loaded) {
         u8g2.setFont(FONT_DATA);
         char buf[32];
@@ -216,7 +216,7 @@ void HttpClient::draw(U8G2& u8g2) {
         u8g2.drawStr(0, 52, buf);
     } else {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 40, "Presets (UP/DN):");
+        drawCN(u8g2, 0, 40, "预设 (上下选择):");
         for (uint8_t i = 0; i < 4; i++) {
             char shortUrl[22];
             const char* src = presetUrls[i];
@@ -232,5 +232,4 @@ void HttpClient::draw(U8G2& u8g2) {
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK=fetch  UP/DN=preset");
 }

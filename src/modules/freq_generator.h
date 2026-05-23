@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 4; }
-    const char* getName() const override     { return "Freq Generator"; }
-    const char* getTitle() const override    { return "Freq Generator"; }
+    const char* getName() const override     { return "频率发生器"; }
+    const char* getTitle() const override    { return "频率发生器"; }
     const unsigned char* getIcon() const override { return icon_pwm; }
     uint8_t     getId() const override       { return 57; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

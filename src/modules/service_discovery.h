@@ -21,8 +21,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 5; }
-    const char* getName() const override     { return "Service Discovery"; }
-    const char* getTitle() const override    { return "Service Discovery"; }
+    const char* getName() const override     { return "服务发现"; }
+    const char* getTitle() const override    { return "服务发现"; }
     const unsigned char* getIcon() const override { return icon_service; }
     uint8_t     getId() const override       { return 65; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

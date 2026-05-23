@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 5; }
-    const char* getName() const override     { return "Multi-Gateway"; }
-    const char* getTitle() const override    { return "ARP GW Detect"; }
+    const char* getName() const override     { return "多网关检测"; }
+    const char* getTitle() const override    { return "ARP网关检测"; }
     const unsigned char* getIcon() const override { return icon_alert; }
     uint8_t     getId() const override       { return 61; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }

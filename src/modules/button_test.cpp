@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "button_test.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -74,7 +75,6 @@ void ButtonTest::handleButton(ButtonEvent ev) {
 
 void ButtonTest::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Button Test");
 
     u8g2.setFont(FONT_BODY);
     char buf[40];
@@ -104,6 +104,6 @@ void ButtonTest::draw(U8G2& u8g2) {
         snprintf(buf, sizeof(buf), "Last: %s", lastEventName);
         u8g2.drawStr(0, 63, buf);
     } else {
-        u8g2.drawStr(0, 63, "Press any button");
+        drawCN(u8g2, 0, 63, "按任意键");
     }
 }

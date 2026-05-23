@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "module_registry.h"
 #include "../config.h"
 
@@ -9,13 +10,14 @@ void ModuleRegistry::init() {
     currentModule = nullptr;
     for (uint8_t i = 0; i < MAX_MODULES; i++) {
         modules[i] = nullptr;
+        initialized[i] = false;
     }
 }
 
 void ModuleRegistry::registerModule(ModuleInterface* mod) {
     if (!mod || count >= MAX_MODULES) return;
     modules[count] = mod;
-    mod->init();
+    Serial.printf("[%2d] heap: %d\n", count, ESP.getFreeHeap());
     count++;
 }
 
@@ -28,6 +30,11 @@ ModuleInterface* ModuleRegistry::launch(uint8_t id) {
 
     currentModule = modules[idx];
     activeIndex = id;
+    if (!initialized[idx]) {
+        initialized[idx] = true;
+        currentModule->init();
+        Serial.printf("[launch] init mod %d, heap: %d\n", id, ESP.getFreeHeap());
+    }
     currentModule->enter();
     return currentModule;
 }

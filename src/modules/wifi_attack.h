@@ -26,9 +26,10 @@ public:
     void update() override;
     void draw(U8G2& u8g2) override;
     void handleButton(ButtonEvent ev) override;
+    bool handleBack() override;
 
     uint8_t     getCategory() const override { return 2; }
-    const char* getName()     const override { return "WiFi Attack"; }
+    const char* getName()     const override { return "WiFi攻击中心"; }
     const char* getTitle()    const override;
     const unsigned char* getIcon() const override { return icon_deauth; }
     uint8_t     getId()       const override { return 40; }
@@ -75,6 +76,8 @@ private:
     // Runtime
     bool     attacking;
     bool     safetyConfirmed;
+    bool     promiscHeld;
+    uint32_t scanStartMs;
     uint32_t attackStart;
     uint32_t lastActionMs;
     uint32_t sentCount;

@@ -14,8 +14,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 4; }
-    const char* getName() const override     { return "UART Monitor"; }
-    const char* getTitle() const override    { return "UART Monitor"; }
+    const char* getName() const override     { return "串口监视器"; }
+    const char* getTitle() const override    { return "串口监视器"; }
     const unsigned char* getIcon() const override { return icon_i2c; }
     uint8_t     getId() const override       { return 55; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }

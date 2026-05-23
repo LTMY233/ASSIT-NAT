@@ -9,9 +9,9 @@
 MenuEngine menuEngine;
 
 // ============================================================
-// Abbreviation & icon mapping
+// Label & icon lookup — switch-based (matches project pattern)
 // ============================================================
-const char* MenuEngine::getAbbrForModule(uint8_t id) {
+const char* MenuEngine::getLabelForModule(uint8_t id) {
     switch (id) {
         // Cat 0 - Network Recon
         case 0:  return "WiFi扫描";    case 1:  return "热力图";
@@ -31,17 +31,17 @@ const char* MenuEngine::getAbbrForModule(uint8_t id) {
         case 27: return "信号监控";    case 28: return "射频噪声";
         // Cat 2 - WiFi Attack
         case 40: return "WiFi攻击中心";
-        case 48: return "WPS PIN";     case 49: return "SSL检查";
+        case 48: return "WPS PIN码";   case 49: return "SSL检查";
         // Cat 3 - Crypto
         case 30: return "动态口令";    case 31: return "密码生成";
         case 32: return "厂商查询";
-        case 33: return "Base64编码";  case 34: return "十六进制";
+        case 33: return "Base64编码";  case 34: return "十六进制转换";
         case 35: return "哈希计算";    case 36: return "异或加密";
         // Cat 4 - Hardware
         case 50: return "逻辑探针";    case 51: return "PWM发生器";
-        case 52: return "ADC电压";     case 53: return "I2C扫描";
-        case 54: return "GPIO控制";    case 55: return "串口监视";
-        case 56: return "SPI扫描";     case 57: return "频率发生器";
+        case 52: return "ADC电压表";   case 53: return "I2C扫描器";
+        case 54: return "GPIO控制";    case 55: return "串口监视器";
+        case 56: return "SPI扫描器";   case 57: return "频率发生器";
         // Cat 5 - Network Diag
         case 60: return "网关发现";    case 61: return "多网关检测";
         case 62: return "信道切换";    case 63: return "信号漂移";
@@ -49,7 +49,7 @@ const char* MenuEngine::getAbbrForModule(uint8_t id) {
         case 66: return "WiFi日志";    case 67: return "网络快照";
         case 68: return "网速测试";    case 69: return "子网计算";
         // Cat 6 - 433MHz
-        case 70: return "433MHz工具箱";
+        case 70: return "RF工具箱";
         // Cat 7 - System
         case 80: return "系统信息";    case 81: return "文件管理";
         case 82: return "屏幕测试";    case 83: return "按键测试";
@@ -68,18 +68,52 @@ const unsigned char* MenuEngine::getIconForModule(uint8_t id) {
         case 6:  return icon_traceroute;   case 7:  return icon_net_stats;
         case 8:  return icon_dhcp;         case 9:  return icon_mdns;
         case 10: return icon_upnp;
+        case 11: return icon_gw_disc;      case 12: return icon_service;
+        case 13: return icon_distance;     case 14: return icon_totp;
+        case 15: return icon_flood;
         case 20: return icon_beacon;       case 21: return icon_frame;
         case 22: return icon_distance;     case 23: return icon_quality;
         case 24: return icon_histogram;
+        case 25: return icon_channel;      case 26: return icon_ch_switch;
+        case 27: return icon_sniffer;      case 28: return icon_alert;
         case 40: return icon_deauth;
+        case 48: return icon_pmkid;        case 49: return icon_handshake;
         case 30: return icon_totp;         case 31: return icon_password;
         case 32: return icon_mac;
+        case 33: return icon_log;          case 34: return icon_frame;
+        case 35: return icon_tests;        case 36: return icon_password;
         case 50: return icon_probe;        case 51: return icon_pwm;
         case 52: return icon_adc;          case 53: return icon_i2c;
+        case 54: return icon_tests;        case 55: return icon_sniffer;
+        case 56: return icon_i2c;          case 57: return icon_pwm;
         case 60: return icon_gw_disc;      case 61: return icon_alert;
         case 62: return icon_ch_switch;    case 63: return icon_drift;
         case 64: return icon_storm;        case 65: return icon_service;
         case 66: return icon_log;          case 67: return icon_snapshot;
+        case 68: return icon_net_stats;    case 69: return icon_host;
+        case 70: return icon_sniffer;
+        case 80: return icon_tests;        case 81: return icon_log;
+        case 82: return icon_channel;      case 83: return icon_probe;
+        case 84: return icon_adc;          case 85: return icon_totp;
+        case 86: return icon_service;      case 87: return icon_flood;
+        case 88: return icon_tests;
+        default: return nullptr;
+    }
+}
+
+// ============================================================
+// Category metadata
+// ============================================================
+const char* MenuEngine::getCategoryName(uint8_t catId) {
+    switch (catId) {
+        case 0: return "网络侦察";
+        case 1: return "射频分析";
+        case 2: return "WiFi攻击";
+        case 3: return "加密工具";
+        case 4: return "硬件诊断";
+        case 5: return "网络诊断";
+        case 6: return "射频工具";
+        case 7: return "系统工具";
         default: return nullptr;
     }
 }
@@ -92,22 +126,8 @@ const unsigned char* MenuEngine::getCatIcon(uint8_t cat) {
         case 3: return icon_totp;
         case 4: return icon_i2c;
         case 5: return icon_snapshot;
-        case 6: return icon_deauth;
+        case 6: return icon_sniffer;
         case 7: return icon_tests;
-        default: return nullptr;
-    }
-}
-
-const char* MenuEngine::getCategoryName(uint8_t catId) {
-    switch (catId) {
-        case 0: return "网络侦察";
-        case 1: return "射频分析";
-        case 2: return "WiFi攻击";
-        case 3: return "加密工具";
-        case 4: return "硬件诊断";
-        case 5: return "网络诊断";
-        case 6: return "433MHz射频";
-        case 7: return "系统工具";
         default: return nullptr;
     }
 }
@@ -134,11 +154,17 @@ void MenuEngine::init() {
 }
 
 void MenuEngine::buildMenu() {
-    for (uint8_t c = 0; c < 8; c++) {
-        pages[c + 1].title = getCategoryName(c);
-        pages[c + 1].itemCount = 0;
+    for (uint8_t i = 0; i < MENU_MAX_PAGES; i++) {
+        pages[i].itemCount = 0;
+        pages[i].title = nullptr;
     }
 
+    // Category sub-pages
+    for (uint8_t c = 0; c < 8; c++) {
+        pages[c + 1].title = getCategoryName(c);
+    }
+
+    // Distribute modules
     for (uint8_t i = 0; i < moduleRegistry.getCount(); i++) {
         ModuleInterface* mod = moduleRegistry.getByIndex(i);
         if (!mod) continue;
@@ -148,15 +174,15 @@ void MenuEngine::buildMenu() {
         if (page.itemCount >= MENU_MAX_ITEMS) continue;
 
         MenuItem& item = page.items[page.itemCount];
-        item.label = getAbbrForModule(mod->getId());
+        item.label = getLabelForModule(mod->getId());
         item.toolId = mod->getId();
         item.icon = mod->getIcon();
         if (!item.icon) item.icon = getIconForModule(mod->getId());
         page.itemCount++;
     }
 
+    // Main page
     pages[0].title = "ASSIT-NAT";
-    pages[0].itemCount = 0;
     for (uint8_t c = 0; c < 8; c++) {
         if (pages[c + 1].itemCount > 0) {
             MenuItem& item = pages[0].items[pages[0].itemCount];
@@ -182,32 +208,26 @@ void MenuEngine::recomputeTargets() {
     if (n == 0) return;
     if (cursorIndex >= n) cursorIndex = n - 1;
 
-    // Scroll target: keep cursor visible
     if (n <= MENU_VISIBLE) {
         scrollYTarget = 0;
-    } else if (cursorIndex < MENU_VISIBLE) {
-        // Cursor near top -> list top
+    } else if (cursorIndex < 1) {
         scrollYTarget = 0;
     } else if (cursorIndex >= n - 1) {
-        // Cursor at end -> list bottom
         scrollYTarget = (float)(n - MENU_VISIBLE) * MENU_ROW_HEIGHT;
     } else {
-        // Cursor in middle -> keep at visible row 2 (idx 1)
         scrollYTarget = (float)(cursorIndex - 1) * MENU_ROW_HEIGHT;
     }
 
-    // Sel box Y = cursor row screen position
     selYTarget = (float)cursorIndex * MENU_ROW_HEIGHT - scrollYTarget + MENU_TOP_PAD;
 
-    // Scrollbar
-    float contentH = (float)OLED_HEIGHT;
+    float contentH = (float)(OLED_HEIGHT - MENU_TOP_PAD);
     if (n > MENU_VISIBLE) {
         sbHTarget = contentH * MENU_VISIBLE / n;
         float maxSbY = contentH - sbHTarget;
-        sbYTarget = maxSbY * cursorIndex / max(1, n - 1);
+        sbYTarget = MENU_TOP_PAD + maxSbY * cursorIndex / max(1, n - 1);
     } else {
         sbHTarget = contentH;
-        sbYTarget = 0;
+        sbYTarget = MENU_TOP_PAD;
     }
 }
 
@@ -228,7 +248,7 @@ bool MenuEngine::isAnimating() const {
 }
 
 // ============================================================
-// Frame update - time-driven exp decay
+// Frame update
 // ============================================================
 void MenuEngine::update() {
     if (state != STATE_MENU_MAIN && state != STATE_MENU_CATEGORY) return;
@@ -246,7 +266,6 @@ void MenuEngine::update() {
     sbY     += (sbYTarget - sbY) * t;
     sbH     += (sbHTarget - sbH) * t;
 
-    // Snap when close to target
     if (fabsf(scrollYTarget - scrollY) < ANIM_SNAP_THRESH) scrollY = scrollYTarget;
     if (fabsf(selYTarget - selY)     < ANIM_SNAP_THRESH) selY    = selYTarget;
     if (fabsf(selWTarget - selW)     < ANIM_SNAP_THRESH) selW    = selWTarget;
@@ -257,52 +276,52 @@ void MenuEngine::update() {
 }
 
 // ============================================================
-// Render - Chinese text via per-char drawCN(), ASCII via u8g2
+// Render — title bar + icon + label + scrollbar + selection box
 // ============================================================
 void MenuEngine::draw(U8G2& u8g2) {
     MenuPage& page = pages[pageIndex];
     if (page.itemCount == 0) return;
 
-    // Selected item width (update anim target)
+    // --- Selected width target ---
     const char* selLabel = page.items[cursorIndex].label;
     uint8_t tw = cnStrWidth(selLabel);
     if (tw == 0) {
         u8g2.setFont(FONT_MENU);
-        tw = u8g2.getStrWidth(selLabel);  // ASCII fallback
+        tw = u8g2.getStrWidth(selLabel);
     }
-    selWTarget = tw + MENU_SEL_PAD_X * 2;
+    selWTarget = MENU_ICON_W + 2 + tw + MENU_SEL_PAD_X * 2;
 
-    const int cnBaseOff = MENU_ROW_HEIGHT - 2;
-
-    // 1. Text items (list scrolls together)
+    // --- List items ---
     for (uint8_t i = 0; i < page.itemCount; i++) {
         const char* label = page.items[i].label;
-        int y = (int)(i * MENU_ROW_HEIGHT - scrollY + MENU_TOP_PAD + cnBaseOff);
-        if (y < -14 || y > OLED_HEIGHT + 16) continue;
+        const unsigned char* icon = page.items[i].icon;
+        int rowTop = (int)(i * MENU_ROW_HEIGHT - scrollY + MENU_TOP_PAD);
+        if (rowTop < MENU_TOP_PAD - 18 || rowTop > OLED_HEIGHT + 2) continue;
 
-        // Chinese or ASCII?
-        if (cnStrWidth(label) > 0) {
-            drawCN(u8g2, MENU_TEXT_X, y, label);
-        } else {
-            u8g2.setFont(FONT_MENU);
-            u8g2.drawStr(MENU_TEXT_X, y - 2, label);
+        if (icon) {
+            int iconY = rowTop + (MENU_ROW_HEIGHT - MENU_ICON_H) / 2;
+            uint8_t iconBuf[32];
+            memcpy_P(iconBuf, icon, 32);
+            u8g2.drawXBM(MENU_ICON_X, iconY, MENU_ICON_W, MENU_ICON_H, iconBuf);
         }
+
+        int baseline = rowTop + MENU_ROW_HEIGHT - 3;
+        drawCN(u8g2, MENU_TEXT_X, baseline, label);
     }
 
-    // 2. Scrollbar
+    // --- Scrollbar ---
     if (page.itemCount > MENU_VISIBLE) {
-        u8g2.drawVLine(MENU_SCROLLBAR_X + 1, 0, OLED_HEIGHT);
+        u8g2.drawVLine(MENU_SCROLLBAR_X + 1, MENU_TOP_PAD, OLED_HEIGHT - MENU_TOP_PAD);
         int th = max(4, (int)sbH);
         u8g2.drawBox(MENU_SCROLLBAR_X, (int)sbY, MENU_SCROLLBAR_W, th);
     }
 
-    // 3. XOR selection box
+    // --- XOR selection box ---
     u8g2.setDrawColor(2);
-    int bx = MENU_TEXT_X - MENU_SEL_PAD_X;
+    int bx = MENU_ICON_X - MENU_SEL_PAD_X;
     int by = (int)selY;
-    int bw = max(20, (int)selW);
-    int bh = MENU_ROW_HEIGHT;
-    u8g2.drawRBox(bx, by, bw, bh - 1, MENU_SEL_RADIUS);
+    int bw = max(MENU_ICON_W + MENU_SEL_PAD_X * 2 + 4, (int)selW);
+    u8g2.drawRBox(bx, by, bw, MENU_ROW_HEIGHT - 1, MENU_SEL_RADIUS);
     u8g2.setDrawColor(1);
 }
 
@@ -350,7 +369,7 @@ void MenuEngine::navigateConfirm() {
         } else {
             u8g2.clearBuffer();
             u8g2.setFont(FONT_BODY);
-            u8g2.drawStr(20, 32, "Launch FAIL!");
+            u8g2.drawStr(28, 32, "Launch FAIL!");
             u8g2.sendBuffer();
             delay(800);
         }
@@ -358,9 +377,16 @@ void MenuEngine::navigateConfirm() {
         return;
     }
 
-    // Enter category sub-page
     if (pageIndex == 0 && cursorIndex < pages[0].itemCount) {
-        pageIndex = cursorIndex + 1;
+        // Find the actual category page matching the selected label,
+        // since empty categories are skipped on the main page.
+        const char* catName = pages[0].items[cursorIndex].label;
+        for (uint8_t p = 1; p < MENU_MAX_PAGES; p++) {
+            if (pages[p].title && strcmp(pages[p].title, catName) == 0) {
+                pageIndex = p;
+                break;
+            }
+        }
         cursorIndex = 0;
         state = STATE_MENU_CATEGORY;
         snapToTargets();
@@ -369,14 +395,13 @@ void MenuEngine::navigateConfirm() {
 }
 
 void MenuEngine::navigateBack() {
-    // Active module -> exit module
     if (moduleRegistry.active()) {
         moduleRegistry.exitCurrent();
         state = (pageIndex == 0) ? STATE_MENU_MAIN : STATE_MENU_CATEGORY;
+        snapToTargets();
         displayMgr.setDirty();
         return;
     }
-    // Category subpage -> back to main
     if (state == STATE_MENU_CATEGORY) {
         pageIndex = 0;
         state = STATE_MENU_MAIN;

@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "adc_voltmeter.h"
 #include "../core/display_mgr.h"
 #include "../config.h"
@@ -29,7 +30,6 @@ void AdcVoltmeter::handleButton(ButtonEvent ev) {}
 
 void AdcVoltmeter::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "ADC Voltmeter");
 
     // voltage value
     u8g2.setFont(FONT_BIG);
@@ -51,6 +51,7 @@ void AdcVoltmeter::draw(U8G2& u8g2) {
     u8g2.drawBox(0, 46, barW, 6);
 
     u8g2.setFont(FONT_DATA);
-    snprintf(buf, sizeof(buf), "Raw:%d/1024", rawValue);
-    u8g2.drawStr(2, 63, buf);
+    drawCN(u8g2, 2, 63, "原始:");
+    snprintf(buf, sizeof(buf), "%d/1024", rawValue);
+    u8g2.drawStr(2 + cnStrWidth("原始:"), 63, buf);
 }

@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "logic_probe.h"
 #include "../core/display_mgr.h"
 #include "../config.h"
@@ -43,11 +44,10 @@ void LogicProbe::handleButton(ButtonEvent ev) {
 
 void LogicProbe::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Logic Probe");
 
     // Level indicator (large)
-    u8g2.setFont(FONT_BIG);
     const char* levelStr = level ? "HIGH" : "LOW";
+    u8g2.setFont(FONT_BIG);
     uint8_t tw = u8g2.getStrWidth(levelStr);
     if (level) u8g2.drawBox((OLED_WIDTH - tw) / 2 - 4, 12, tw + 8, 22);
     u8g2.setDrawColor(level ? 0 : 1);
@@ -56,8 +56,6 @@ void LogicProbe::draw(U8G2& u8g2) {
 
     u8g2.setFont(FONT_DATA);
     char buf[30];
-    snprintf(buf, sizeof(buf), "Pin:GPIO%d", pin);
-    u8g2.drawStr(2, 44, buf);
     snprintf(buf, sizeof(buf), "H:%lu L:%lu T:%lu", highCount, lowCount, transitions);
     u8g2.drawStr(2, 63, buf);
 }

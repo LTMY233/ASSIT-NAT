@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "led_test.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -39,9 +40,9 @@ const char* LedTest::getPatternName(uint8_t p) {
     switch (p) {
         case LED_BLINK:     return "Blink";
         case LED_SOS:       return "SOS";
-        case LED_FAST:      return "Fast";
+        case LED_FAST:      return "快";
         case LED_SLOW:      return "Slow";
-        case LED_HEARTBEAT: return "Heartbeat";
+        case LED_HEARTBEAT: return "心跳";
         default: return "Unknown";
     }
 }
@@ -149,25 +150,24 @@ void LedTest::handleButton(ButtonEvent ev) {
 
 void LedTest::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "LED Test");
 
     u8g2.setFont(FONT_BODY);
     char buf[32];
 
     // Pattern name
-    snprintf(buf, sizeof(buf), "Pattern: %s", getPatternName(currentPattern));
-    u8g2.drawStr(2, 24, buf);
+    snprintf(buf, sizeof(buf), "模式: %s", getPatternName(currentPattern));
+    drawCN(u8g2, 2, 24, buf);
 
     // Status
-    snprintf(buf, sizeof(buf), "State: %s",
-             running ? (ledState ? "ON" : "OFF") : "STOPPED");
-    u8g2.drawStr(2, 33, buf);
+    snprintf(buf, sizeof(buf), "态: %s",
+             running ? (ledState ? "开" : "关") : "已停止");
+    drawCN(u8g2, 2, 33, buf);
 
     // Interval for non-SOS patterns
     if (currentPattern != LED_SOS) {
-        snprintf(buf, sizeof(buf), "Interval:%lums",
+        snprintf(buf, sizeof(buf), "时:%lums",
                  (unsigned long)getPatternInterval(currentPattern));
-        u8g2.drawStr(2, 42, buf);
+        drawCN(u8g2, 2, 42, buf);
     } else {
         u8g2.drawStr(2, 42, "SOS: ...---...");
     }
@@ -184,8 +184,6 @@ void LedTest::draw(U8G2& u8g2) {
 
     u8g2.setFont(FONT_DATA);
     if (running) {
-        u8g2.drawStr(0, 63, "OK=stop");
     } else {
-        u8g2.drawStr(0, 63, "OK=start  UP/DN=pattern");
     }
 }

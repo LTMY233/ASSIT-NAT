@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "hash_calc.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -109,12 +110,10 @@ void HashCalc::handleButton(ButtonEvent ev) {
 
 void HashCalc::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Hash Calc");
 
     // Mode
-    char modeBuf[16];
-    snprintf(modeBuf, sizeof(modeBuf), "Algo: %s", hashMode == 0 ? "XOR" : "FNV32");
-    u8g2.drawStr(0, 22, modeBuf);
+    drawCN(u8g2, 0, 22, hashMode == 0 ? "算法:XOR" : "算法:FNV32");
+    u8g2.setFont(FONT_DATA);
 
     u8g2.drawHLine(0, 26, OLED_WIDTH);
 
@@ -131,10 +130,10 @@ void HashCalc::draw(U8G2& u8g2) {
     // Hash output
     if (computed) {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 48, "Hash:");
-        u8g2.drawStr(28, 48, hashStr);
+        drawCN(u8g2, 0, 48, "哈希:");
+        u8g2.setFont(FONT_DATA);
+        u8g2.drawStr(32, 48, hashStr);
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK=Calc  DblUD=Algo");
 }

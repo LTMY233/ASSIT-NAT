@@ -26,8 +26,9 @@ public:
 
 private:
     ModuleInterface* modules[MAX_MODULES];
-    uint8_t  count;
-    uint8_t  activeIndex;
+    bool      initialized[MAX_MODULES];
+    uint8_t   count;
+    uint8_t   activeIndex;
     ModuleInterface* currentModule;
 
     int8_t findById(uint8_t id) const;

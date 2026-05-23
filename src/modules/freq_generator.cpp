@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "freq_generator.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -93,7 +94,6 @@ void FreqGenerator::handleButton(ButtonEvent ev) {
 
 void FreqGenerator::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Freq Generator");
 
     // Frequency display
     u8g2.setFont(FONT_BIG);
@@ -108,17 +108,20 @@ void FreqGenerator::draw(U8G2& u8g2) {
 
     // Duty cycle and waveform
     u8g2.setFont(FONT_DATA);
-    static const char* waveNames[] = {"SQUARE", "SINE", "TRI", "SAW"};
-    snprintf(buf, sizeof(buf), "Duty:%d%% %s", dutyCycle, waveNames[waveform]);
+    static const char* waveNames[] = {"方", "正", "TRI", "SAW"};
+    snprintf(buf, sizeof(buf), "Duty:%d%% ", dutyCycle);
     u8g2.drawStr(2, 42, buf);
+    drawCN(u8g2, 2 + u8g2.getStrWidth(buf), 43, waveNames[waveform]);
 
     // Output state
-    snprintf(buf, sizeof(buf), "Out:%s", output ? "ON" : "OFF");
-    u8g2.drawStr(2, 50, buf);
+    u8g2.drawStr(2, 50, "Out:");
+    drawCN(u8g2, 2 + u8g2.getStrWidth("Out:"), 51, output ? "开" : "关");
 
     // Footer
-    static const char* editNames[] = {"Freq", "Duty", "Wave"};
-    snprintf(buf, sizeof(buf), "Edit:%s OK:out OKx2:next",
-             editNames[editMode]);
-    u8g2.drawStr(0, 63, buf);
+    static const char* editNames[] = {"频率", "Duty", "Wave"};
+    drawCN(u8g2, 0, 63, "编辑:");
+    uint8_t epos = cnStrWidth("编辑:");
+    drawCN(u8g2, epos, 63, editNames[editMode]);
+    u8g2.drawStr(epos + cnStrWidth(editNames[editMode]), 63,
+                 " OK:out OKx2:next");
 }

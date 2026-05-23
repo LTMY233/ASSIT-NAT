@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 3; }
-    const char* getName() const override     { return "Password Gen"; }
-    const char* getTitle() const override    { return "Password Gen"; }
+    const char* getName() const override     { return "密码生成器"; }
+    const char* getTitle() const override    { return "密码生成器"; }
     const unsigned char* getIcon() const override { return icon_password; }
     uint8_t     getId() const override       { return 31; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

@@ -3,6 +3,7 @@
 #include "../core/display_mgr.h"
 #include "../core/button_mgr.h"
 #include "../utils.h"
+#include "../chinese_glyphs.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266Ping.h>
 
@@ -89,28 +90,26 @@ void HostDiscovery::handleButton(ButtonEvent ev) {
 }
 
 void HostDiscovery::draw(U8G2& u8g2) {
-    u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Host Discovery");
+    drawCN(u8g2, 0, 10, "主机发现");
 
     if (scanning) {
         u8g2.setFont(FONT_BODY);
         char buf[32];
         IPAddress cur = subnetBase; cur[3] = scanIndex;
         char ipBuf[16]; ipToStr(cur, ipBuf, sizeof(ipBuf));
-        snprintf(buf, sizeof(buf), "Scan: %s (%d/254)", ipBuf, scanIndex);
+        snprintf(buf, sizeof(buf), "扫描: %s (%d/254)", ipBuf, scanIndex);
         u8g2.drawStr(2, 30, buf);
         // progress bar
         uint8_t prog = scanIndex * OLED_WIDTH / 254;
         u8g2.drawFrame(0, 38, OLED_WIDTH, 5);
         u8g2.drawBox(0, 38, prog, 5);
-        snprintf(buf, sizeof(buf), "Found: %d", hostCount);
+        snprintf(buf, sizeof(buf), "已发现: %d", hostCount);
         u8g2.drawStr(2, 50, buf);
         return;
     }
 
     if (hostCount == 0) {
-        u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "No devices found");
+        drawCN(u8g2, 8, 38, "未发现设备");
         return;
     }
 
@@ -128,6 +127,6 @@ void HostDiscovery::draw(U8G2& u8g2) {
 
     u8g2.setFont(FONT_DATA);
     char buf[20];
-    snprintf(buf, sizeof(buf), "%d devices online", hostCount);
+    snprintf(buf, sizeof(buf), "%d 个在线设备", hostCount);
     u8g2.drawStr(0, 63, buf);
 }

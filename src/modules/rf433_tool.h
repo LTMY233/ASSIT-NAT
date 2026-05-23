@@ -6,6 +6,9 @@
 #define RF433_MAX_CODES   16
 #define RF433_MAX_PULSES  64
 #define RF433_DB_COUNT    12
+#define RF433_FREQ_MIN    300
+#define RF433_FREQ_MAX    450
+#define RF433_FREQ_DFL    433
 
 struct Rf433CodeEntry {
     unsigned long value;
@@ -22,9 +25,10 @@ public:
     void update() override;
     void draw(U8G2& u8g2) override;
     void handleButton(ButtonEvent ev) override;
+    bool handleBack() override;
 
     uint8_t     getCategory() const override { return 6; }
-    const char* getName()     const override { return "433MHz Tool"; }
+    const char* getName()     const override { return "RF工具箱"; }
     const char* getTitle()    const override;
     const unsigned char* getIcon() const override { return icon_deauth; }
     uint8_t     getId()       const override { return 70; }
@@ -35,8 +39,8 @@ private:
         RF_MENU,
         RF_SCAN,
         RF_BROWSE,
-        RF_SEND,
-        RF_RAW_EDIT,
+        RF_COPY_SEND,    // multi-select → sequential send
+        RF_CUSTOM_SEND,  // arbitrary Hz, ±1Hz step, ±10Hz hold
         RF_DEVDB,
         RF_TEMP_SENSOR,
     };
@@ -62,15 +66,27 @@ private:
     int      scanRaw[RF433_MAX_PULSES];
     uint8_t  scanRawCnt;
     uint16_t scanAvgUs;
+    bool     scanSweep;        // auto frequency sweep mode
+    uint8_t  scanSweepIdx;     // current sweep table index
+    uint32_t scanLastSweepMs;  // last sweep frequency change time
+    uint32_t scanRawActivityMs;// millis() of last raw signal activity (for UI feedback)
+    uint32_t scanPinLowCnt;    // direct GPIO poll: times pin was LOW (carrier detected)
+    uint32_t scanPinPollCnt;   // total poll count
 
     // TX data
     unsigned long txCode;
     uint8_t  txBits;
     uint8_t  txProto;
-    uint8_t  txPulseUs;
+    uint16_t txPulseUs;
     uint8_t  txEditPos;
-    uint8_t  txEditMode;  // 0=bit, 1=proto, 2=pulse
+    uint8_t  txEditMode;  // 0=bit, 1=proto, 2=pulse, 3=freq
+    uint16_t rfFreq;      // target RF frequency (300-450 MHz)
     uint32_t txCount;
+    uint32_t txFeedback;  // millis() of last TX — shows "Sent!" for ~500ms
+
+    // Copy-send (multi-select)
+    uint16_t selectedMask; // bit N=1 → code N selected
+    uint8_t  copyCursor;
 
     // Dev DB
     uint8_t  dbCursor;
@@ -107,8 +123,8 @@ private:
     void drawMenu(U8G2& u8g2);
     void drawScan(U8G2& u8g2);
     void drawBrowse(U8G2& u8g2);
-    void drawSend(U8G2& u8g2);
-    void drawRawEdit(U8G2& u8g2);
+    void drawCopySend(U8G2& u8g2);
+    void drawCustomSend(U8G2& u8g2);
     void drawDevDb(U8G2& u8g2);
     void drawTemp(U8G2& u8g2);
 };

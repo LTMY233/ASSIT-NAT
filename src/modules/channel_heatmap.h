@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 0; }
-    const char* getName() const override     { return "Channel Heatmap"; }
-    const char* getTitle() const override    { return "Channel Heatmap"; }
+    const char* getName() const override     { return "信道热力图"; }
+    const char* getTitle() const override    { return "信道热力图"; }
     const unsigned char* getIcon() const override { return icon_channel; }
     uint8_t     getId() const override       { return 1; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }

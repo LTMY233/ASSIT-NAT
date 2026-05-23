@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "port_scanner.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -95,7 +96,6 @@ void PortScanner::handleButton(ButtonEvent ev) {
 
 void PortScanner::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Port Scanner");
 
     if (scanning) {
         u8g2.setFont(FONT_BODY);
@@ -110,7 +110,7 @@ void PortScanner::draw(U8G2& u8g2) {
 
     if (resultCount == 0) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "No open ports");
+        drawCN(u8g2, 10, 35, "无开放端口");
     } else {
         u8g2.setFont(FONT_DATA);
         for (uint8_t i = 0; i < resultCount && i < 2; i++) {

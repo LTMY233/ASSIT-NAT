@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "pwm_gen.h"
 #include "../core/display_mgr.h"
 #include "../config.h"
@@ -73,7 +74,6 @@ void PwmGen::handleButton(ButtonEvent ev) {
 
 void PwmGen::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "PWM Generator");
 
     u8g2.setFont(FONT_BIG);
     char buf[20];
@@ -86,12 +86,14 @@ void PwmGen::draw(U8G2& u8g2) {
     u8g2.drawStr((OLED_WIDTH - tw) / 2, 28, buf);
 
     u8g2.setFont(FONT_DATA);
-    snprintf(buf, sizeof(buf), "Duty:%d%% %s", dutyCycle, output ? "ON" : "OFF");
+    snprintf(buf, sizeof(buf), "Duty:%d%% ", dutyCycle);
     u8g2.drawStr(2, 40, buf);
+    drawCN(u8g2, 2 + u8g2.getStrWidth(buf), 41, output ? "开" : "关");
 
-    snprintf(buf, sizeof(buf), "Edit:%s UP/DN+/- dbl=sw",
-             editMode == 0 ? "freq" : "duty");
-    u8g2.drawStr(0, 46, buf);
+    drawCN(u8g2, 0, 46, "编辑:");
+    uint8_t epos = cnStrWidth("编辑:");
+    drawCN(u8g2, epos, 46, editMode == 0 ? "频率" : "Duty");
+    u8g2.drawStr(epos + cnStrWidth(editMode == 0 ? "频率" : "Duty"), 46,
+                 " UP/DN+/- dbl=sw");
 
-    u8g2.drawStr(0, 63, "OK=toggle");
 }

@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "ping_monitor.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -132,7 +133,6 @@ void PingMonitor::handleButton(ButtonEvent ev) {
 
 void PingMonitor::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Ping Monitor");
 
     // Gateway
     char gwBuf[20];

@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "mac_lookup.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -38,7 +39,7 @@ void MacLookup::lookup() {
     }
 
     if (!found) {
-        strCopySafe(vendorName, "Unknown Vendor", sizeof(vendorName));
+        vendorName[0] = '\0';
     }
 }
 
@@ -71,7 +72,6 @@ void MacLookup::handleButton(ButtonEvent ev) {
 
 void MacLookup::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "MAC OUI Lookup");
 
     // MAC address display (editable)
     u8g2.setFont(FONT_BIG);
@@ -89,19 +89,19 @@ void MacLookup::draw(U8G2& u8g2) {
     u8g2.drawStr((OLED_WIDTH - tw) / 2, 36, restBuf);
 
     // vendor name
-    u8g2.setFont(FONT_BODY);
-    uint8_t vLen = strlen(vendorName);
-    if (vLen > 20) {
-        // truncate display
-        char trunc[21];
-        strncpy(trunc, vendorName, 20); trunc[20] = '\0';
-        u8g2.drawStr(2, 46, trunc);
+    if (!found) {
+        drawCN(u8g2, 2, 46, "未知厂商");
     } else {
-        u8g2.drawStr(2, 46, vendorName);
+        u8g2.setFont(FONT_BODY);
+        uint8_t vLen = strlen(vendorName);
+        if (vLen > 20) {
+            // truncate display
+            char trunc[21];
+            strncpy(trunc, vendorName, 20); trunc[20] = '\0';
+            u8g2.drawStr(2, 46, trunc);
+        } else {
+            u8g2.drawStr(2, 46, vendorName);
+        }
     }
 
-    u8g2.setFont(FONT_DATA);
-    char hint[20];
-    snprintf(hint, sizeof(hint), "Digit:%d/%d", editPos, 5);
-    u8g2.drawStr(0, 63, hint);
 }

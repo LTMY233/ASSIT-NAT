@@ -26,9 +26,9 @@ public:
     void draw(U8G2& u8g2) override;
     void handleButton(ButtonEvent ev) override;
 
-    uint8_t     getCategory() const override { return 1; }
-    const char* getName() const override     { return "Beacon Decoder"; }
-    const char* getTitle() const override    { return "Beacon Decoder"; }
+    uint8_t     getCategory() const override { return 6; }
+    const char* getName() const override     { return "信标解码器"; }
+    const char* getTitle() const override    { return "信标解码器"; }
     const unsigned char* getIcon() const override { return icon_beacon; }
     uint8_t     getId() const override       { return 20; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

@@ -4,6 +4,7 @@
 #include "../core/wifi_mgr.h"
 #include "../core/sw_rtc.h"
 #include "../utils.h"
+#include "../chinese_glyphs.h"
 #include <ESP8266WiFi.h>
 
 ProbeSniffer* ProbeSniffer::instance = nullptr;
@@ -116,12 +117,10 @@ void ProbeSniffer::handleButton(ButtonEvent ev) {
 }
 
 void ProbeSniffer::draw(U8G2& u8g2) {
-    u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Probe Sniffer");
+    drawCN(u8g2, 0, 10, "探针嗅探器");
 
     if (deviceCount == 0) {
-        u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "Listening for probes...");
+        drawCN(u8g2, 4, 38, "正在监听探针...");
         return;
     }
 
@@ -153,6 +152,6 @@ void ProbeSniffer::draw(U8G2& u8g2) {
 
     u8g2.setFont(FONT_DATA);
     char cntBuf[20];
-    snprintf(cntBuf, sizeof(cntBuf), "Devices: %d", deviceCount);
+    snprintf(cntBuf, sizeof(cntBuf), "设备: %d", deviceCount);
     u8g2.drawStr(0, 63, cntBuf);
 }

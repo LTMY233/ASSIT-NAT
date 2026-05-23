@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "rssi_distance.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -64,7 +65,6 @@ void RssiDistance::handleButton(ButtonEvent ev) {
 
 void RssiDistance::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "RSSI Distance");
 
     u8g2.setFont(FONT_BIG);
     char buf[16];
@@ -82,7 +82,7 @@ void RssiDistance::draw(U8G2& u8g2) {
     snprintf(buf, sizeof(buf), "RSSI:%d dBm  A:%d dBm", currentRssi, refRssi);
     u8g2.drawStr(2, 42, buf);
 
-    snprintf(buf, sizeof(buf), "n=%.1f A=%d  OK=Toggle",
+    snprintf(buf, sizeof(buf), "n=%.1f A=%d  确认=切换",
              n, refRssi);
-    u8g2.drawStr(0, 63, buf);
+    drawCN(u8g2, 0, 63, buf);
 }

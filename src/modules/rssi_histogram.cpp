@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "rssi_histogram.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -61,11 +62,10 @@ void RssiHistogram::handleButton(ButtonEvent ev) {
 
 void RssiHistogram::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "RSSI Histogram");
 
     if (!hasData) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "Scanning...");
+        drawCN(u8g2, 10, 35, "扫描中...");
         return;
     }
 
@@ -92,5 +92,5 @@ void RssiHistogram::draw(U8G2& u8g2) {
         }
     }
 
-    u8g2.drawStr(0, 63, "OK to rescan");
+    drawCN(u8g2, 0, 63, "按OK重扫");
 }

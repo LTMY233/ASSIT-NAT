@@ -20,8 +20,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 7; }
-    const char* getName() const override     { return "LED Test"; }
-    const char* getTitle() const override    { return "LED Test"; }
+    const char* getName() const override     { return "LED测试"; }
+    const char* getTitle() const override    { return "LED测试"; }
     uint8_t     getId() const override       { return 87; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }
 

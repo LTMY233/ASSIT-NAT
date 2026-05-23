@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "ntp_query.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -121,7 +122,6 @@ void NtpQuery::handleButton(ButtonEvent ev) {
 
 void NtpQuery::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "NTP Query");
 
     if (synced) {
         // Time display
@@ -139,13 +139,13 @@ void NtpQuery::draw(U8G2& u8g2) {
         u8g2.drawStr(0, 55, status);
     } else if (querying) {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(10, 35, "Querying NTP...");
+        drawCN(u8g2, 10, 35, "查询NTP...");
         u8g2.drawStr(10, 46, "pool.ntp.org");
     } else {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(10, 35, "OK = Sync NTP");
+        drawCN(u8g2, 10, 35, "OK = 同步NTP");
         u8g2.drawStr(10, 46, "pool.ntp.org:123");
-        u8g2.drawStr(10, 55, "UP/DN adjust TZ");
+        drawCN(u8g2, 10, 55, "上下调整时区");
     }
 
     u8g2.setFont(FONT_DATA);

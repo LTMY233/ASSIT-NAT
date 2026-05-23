@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "dhcp_discovery.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -113,17 +114,16 @@ void DhcpDiscovery::handleButton(ButtonEvent ev) {
 
 void DhcpDiscovery::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "DHCP Discovery");
 
     if (scanning) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 30, "Scanning...");
+        drawCN(u8g2, 2, 30, "扫描中...");
         return;
     }
 
     if (serverCount == 0) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "No DHCP found");
+        drawCN(u8g2, 10, 35, "未发现DHCP");
     } else {
         u8g2.setFont(FONT_DATA);
         for (uint8_t i = 0; i < serverCount; i++) {
@@ -141,5 +141,5 @@ void DhcpDiscovery::draw(U8G2& u8g2) {
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "Press OK to rescan");
+    drawCN(u8g2, 0, 63, "按OK重扫");
 }

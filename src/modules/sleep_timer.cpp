@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "sleep_timer.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -10,7 +11,7 @@ void SleepTimer::init() {
 }
 
 void SleepTimer::enter() {
-    sleepSeconds = 10; confirmStart = false;
+    sleepSeconds = min((uint32_t)10, (uint32_t)4200); confirmStart = false;
     countdownStart = 0; stepMode = 0;
     displayMgr.setDirty();
 }
@@ -41,6 +42,10 @@ void SleepTimer::update() {
 
 void SleepTimer::handleButton(ButtonEvent ev) {
     if (confirmStart) {
+        // Let long/double OK through so core can navigateBack()
+        if (ev == BTN_OK_LONG || ev == BTN_OK_DOUBLE) {
+            return;
+        }
         if (ev != BTN_NONE) {
             confirmStart = false;
             displayMgr.setDirty();
@@ -59,7 +64,7 @@ void SleepTimer::handleButton(ButtonEvent ev) {
                 default: step = 1; break;
             }
             sleepSeconds += step;
-            if (sleepSeconds > 86400) sleepSeconds = 86400;  // max 24h
+            if (sleepSeconds > 4200) sleepSeconds = 4200;  // ESP8266 RTC max ~71 min
             displayMgr.setDirty();
             break;
         }
@@ -96,19 +101,19 @@ void SleepTimer::handleButton(ButtonEvent ev) {
 
 void SleepTimer::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Sleep Timer");
 
     if (confirmStart) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 28, "Going to sleep in...");
-        uint32_t remaining = 3 - (millis() - countdownStart) / 1000;
+        drawCN(u8g2, 10, 28, "即将休眠...");
+        int remaining = 3 - (int)((millis() - countdownStart) / 1000);
+        if (remaining < 0) remaining = 0;
         u8g2.setFont(FONT_BIG);
         char buf[8];
-        snprintf(buf, sizeof(buf), "%lu", (unsigned long)remaining);
+        snprintf(buf, sizeof(buf), "%d", remaining);
         uint8_t tw = u8g2.getStrWidth(buf);
         u8g2.drawStr((OLED_WIDTH - tw) / 2, 45, buf);
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 63, "Any key=cancel");
+        drawCN(u8g2, 0, 63, "任意键取消");
         return;
     }
 
@@ -129,5 +134,4 @@ void SleepTimer::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
     u8g2.drawStr(2, 55, "UP/DN adjust  OK=sleep");
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "Dbl-click change step");
 }

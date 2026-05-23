@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "dns_lookup.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -106,7 +107,6 @@ void DnsLookup::handleButton(ButtonEvent ev) {
 
 void DnsLookup::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "DNS Lookup");
 
     // Hostname input field
     char lineBuf[50];
@@ -127,17 +127,16 @@ void DnsLookup::draw(U8G2& u8g2) {
     // Result
     u8g2.setFont(FONT_DATA);
     if (resolving) {
-        u8g2.drawStr(0, 44, "Resolving...");
+        drawCN(u8g2, 0, 44, "解析中...");
     } else if (resolved) {
         u8g2.setFont(FONT_BIG);
         uint8_t tw = u8g2.getStrWidth(resultStr);
         u8g2.drawStr((OLED_WIDTH - tw) / 2, 48, resultStr);
     } else {
-        u8g2.drawStr(0, 44, "OK=Resolve  UP/DN=Edit");
-        u8g2.drawStr(0, 55, "HoldOK=Next  Dbl=+/-");
+        drawCN(u8g2, 0, 44, "OK=解析 上下=编辑");
+        u8g2.drawStr(2, 55, "HoldOK=next Dbl=+/-");
     }
 
     // Footer
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "DNS A Record Query");
 }

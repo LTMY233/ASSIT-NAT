@@ -15,8 +15,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 4; }
-    const char* getName() const override     { return "I2C Scanner"; }
-    const char* getTitle() const override    { return "I2C Scanner"; }
+    const char* getName() const override     { return "I2C扫描器"; }
+    const char* getTitle() const override    { return "I2C扫描器"; }
     const unsigned char* getIcon() const override { return icon_i2c; }
     uint8_t     getId() const override       { return 53; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

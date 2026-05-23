@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "service_discovery.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -110,7 +111,6 @@ void ServiceDiscovery::handleButton(ButtonEvent ev) {
 
 void ServiceDiscovery::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Service Discovery Scan");
 
     u8g2.setFont(FONT_DATA);
     const char* modeNames[] = {"Telnet/SSH", "Printer", "Media Server", "Modbus"};
@@ -119,9 +119,9 @@ void ServiceDiscovery::draw(U8G2& u8g2) {
     u8g2.drawStr(2, 24, buf);
 
     if (scanning) {
-        u8g2.drawStr(2, 30, "Scanning...");
+        drawCN(u8g2, 2, 30, "扫描中...");
     } else if (resultCount == 0) {
-        u8g2.drawStr(10, 35, "No services found");
+        drawCN(u8g2, 5, 35, "未发现服务");
     } else {
         for (uint8_t i = 0; i < resultCount && i < 2; i++) {
             uint8_t y = 39 + i * 15;
@@ -133,5 +133,4 @@ void ServiceDiscovery::draw(U8G2& u8g2) {
         }
     }
 
-    u8g2.drawStr(0, 63, "Up/Dn mode  OK rescan");
 }

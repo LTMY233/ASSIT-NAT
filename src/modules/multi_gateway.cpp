@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "multi_gateway.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -80,11 +81,10 @@ void MultiGateway::handleButton(ButtonEvent ev) {
 
 void MultiGateway::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "ARP Gateway Spoof Detection");
 
     if (alert) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 24, "⚠ Multiple gateway MACs!");
+        drawCN(u8g2, 2, 24, "检测到多网关!");
     }
 
     u8g2.setFont(FONT_DATA);
@@ -94,6 +94,6 @@ void MultiGateway::draw(U8G2& u8g2) {
         u8g2.drawStr(2, y, macBuf);
     }
 
-    if (gwCount <= 1) u8g2.drawStr(10, 39, "Normal - single gateway");
-    u8g2.drawStr(0, 63, "OK to reset");
+    if (gwCount <= 1) drawCN(u8g2, 10, 39, "正常 - 单网关");
+    drawCN(u8g2, 0, 63, "按OK重置");
 }

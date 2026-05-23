@@ -2,6 +2,7 @@
 #include "../config.h"
 #include "../core/display_mgr.h"
 #include "../utils.h"
+#include "../chinese_glyphs.h"
 
 static WiFiUDP pingUdp;
 
@@ -129,8 +130,7 @@ void GatewayMonitor::handleButton(ButtonEvent ev) {
 }
 
 void GatewayMonitor::draw(U8G2& u8g2) {
-    u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Gateway Monitor");
+    drawCN(u8g2, 0, 10, "网关监控器");
 
     char gwBuf[20];
     ipToStr(gateway, gwBuf, sizeof(gwBuf));
@@ -155,7 +155,7 @@ void GatewayMonitor::draw(U8G2& u8g2) {
              minRtt == 9999 ? 0 : minRtt, maxRtt, avgRtt);
     u8g2.drawStr(2, 45, statBuf);
 
-    snprintf(statBuf, sizeof(statBuf), "Loss:%d%%  Jit:%dms  Tot:%d",
+    snprintf(statBuf, sizeof(statBuf), "丢包:%d%%  抖动:%dms  总计:%d",
              lossPercent, jitter, totalPings);
     u8g2.drawStr(2, 63, statBuf);
 }

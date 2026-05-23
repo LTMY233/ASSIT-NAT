@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "event_logger.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -18,7 +19,7 @@ void EventLogger::enter() {
     entryCount = 0; cursor = 0; instance = this;
     wifiMgr.promiscuousAcquire(getId());
     running = true;
-    addEntry("Log Start");
+    addEntry("日志开始");
     displayMgr.setDirty();
 }
 
@@ -61,15 +62,15 @@ void EventLogger::onPacket(uint8_t* buf, uint16_t len) {
             }
             i += 2 + body[i+1];
         }
-        snprintf(msg, sizeof(msg), "Beacon %s", ssid);
+        snprintf(msg, sizeof(msg), "信标 %s", ssid);
         instance->addEntry(msg);
     } else if (type == 0x00 && subtype == 0x04) {  // Probe Req
         char msg[48];
-        snprintf(msg, sizeof(msg), "Probe %s", macBuf);
+        snprintf(msg, sizeof(msg), "探测 %s", macBuf);
         instance->addEntry(msg);
     } else if (type == 0x00 && subtype == 0x0C) {  // Deauth
         char msg[48];
-        snprintf(msg, sizeof(msg), "Deauth %s", macBuf);
+        snprintf(msg, sizeof(msg), "去认证 %s", macBuf);
         instance->addEntry(msg);
     }
 }
@@ -86,11 +87,10 @@ void EventLogger::handleButton(ButtonEvent ev) {
 
 void EventLogger::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "802.11 Event Logger");
 
     if (entryCount == 0) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "Waiting for events...");
+        drawCN(u8g2, 10, 35, "等待中...");
         return;
     }
 
@@ -108,9 +108,10 @@ void EventLogger::draw(U8G2& u8g2) {
                  (entries[idx].timestamp / 60000) % 60,
                  (entries[idx].timestamp / 1000) % 60);
         u8g2.drawStr(0, y, timeBuf);
-        u8g2.drawStr(40, y, entries[idx].message);
+        drawCN(u8g2, 40, y, entries[idx].message);
+        u8g2.setFont(FONT_DATA);
         if (idx == cursor) u8g2.setDrawColor(1);
     }
 
-    u8g2.drawStr(0, 63, "OK to clear");
+    drawCN(u8g2, 0, 63, "按OK清除");
 }

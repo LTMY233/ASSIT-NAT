@@ -3,6 +3,7 @@
 #include "../core/display_mgr.h"
 #include "../core/wifi_mgr.h"
 #include "../utils.h"
+#include "../chinese_glyphs.h"
 #include <ESP8266WiFi.h>
 
 ScanRecord WifiScanner::results[WIFI_SCAN_MAX_AP];
@@ -109,16 +110,29 @@ void WifiScanner::handleButton(ButtonEvent ev) {
     if (cursor >= scrollOffset + vis) scrollOffset = cursor - vis + 1;
 }
 
+bool WifiScanner::handleBack() {
+    if (state == SCANNING) {
+        state = IDLE;
+        displayMgr.setDirty();
+        return true;
+    }
+    if (state == RESULTS) {
+        state = IDLE;
+        cursor = 0;
+        scrollOffset = 0;
+        displayMgr.setDirty();
+        return true;
+    }
+    return false;
+}
+
 void WifiScanner::draw(U8G2& u8g2) {
-    u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 8, "WiFi Scanner");
+    drawCN(u8g2, 0, 10, "WiFi扫描器");
 
     if (state == SCANNING) {
-        u8g2.setFont(FONT_MENU);
-        u8g2.drawStr(20, 40, "Scanning...");
+        drawCN(u8g2, 10, 42, "扫描中...");
     } else if (resultCount == 0) {
-        u8g2.setFont(FONT_MENU);
-        u8g2.drawStr(10, 40, "No networks");
+        drawCN(u8g2, 8, 42, "未发现网络");
     } else {
         // Header
         u8g2.setFont(FONT_DATA);
@@ -157,11 +171,10 @@ void WifiScanner::draw(U8G2& u8g2) {
             }
         }
 
-        // Bottom bar
+        // Position indicator
         u8g2.setFont(FONT_DATA);
-        char foot[32];
-        snprintf(foot, sizeof(foot), "%d/%d nets  OK:rescan",
-                 cursor + 1, resultCount);
+        char foot[16];
+        snprintf(foot, sizeof(foot), "%d/%d个", cursor + 1, resultCount);
         u8g2.drawStr(0, 63, foot);
     }
 }

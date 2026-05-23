@@ -39,7 +39,6 @@ private:
     uint8_t      cursorIndex;
     uint32_t     lastUpdateMs;
 
-    // Animation values — list scroll
     float scrollY,   scrollYTarget;
     float selY,      selYTarget;
     float selW,      selWTarget;
@@ -53,10 +52,10 @@ private:
     void navigateDown();
     void navigateConfirm();
 
-    static const char*           getAbbrForModule(uint8_t id);
-    static const unsigned char*  getIconForModule(uint8_t id);
-    static const char*           getCategoryName(uint8_t catId);
-    static const unsigned char*  getCatIcon(uint8_t cat);
+    static const char*          getLabelForModule(uint8_t id);
+    static const unsigned char* getIconForModule(uint8_t id);
+    static const char*          getCategoryName(uint8_t catId);
+    static const unsigned char* getCatIcon(uint8_t cat);
 };
 
 extern MenuEngine menuEngine;

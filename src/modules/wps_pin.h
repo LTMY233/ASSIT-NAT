@@ -11,8 +11,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 3; }
-    const char* getName() const override     { return "WPS PIN Calc"; }
-    const char* getTitle() const override    { return "WPS Pin Calc"; }
+    const char* getName() const override     { return "WPS PIN码"; }
+    const char* getTitle() const override    { return "WPS PIN码"; }
     uint8_t     getId() const override       { return 48; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }
     bool        canRunOffline() const override { return true; }

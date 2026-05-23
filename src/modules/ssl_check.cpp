@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "ssl_check.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -101,7 +102,6 @@ void SslCheck::handleButton(ButtonEvent ev) {
 
 void SslCheck::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "SSL Check");
 
     // Host input
     char lineBuf[50];
@@ -118,11 +118,9 @@ void SslCheck::draw(U8G2& u8g2) {
 
     u8g2.drawHLine(0, 30, OLED_WIDTH);
 
-    // Result
     if (connecting) {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 44, "Testing SSL/TLS...");
-        u8g2.drawStr(0, 55, "Port 443");
+        drawCN(u8g2, 0, 44, "测试SSL/TLS...");
     } else {
         u8g2.setFont(FONT_DATA);
         // Word-wrap long result
@@ -137,5 +135,4 @@ void SslCheck::draw(U8G2& u8g2) {
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK=Test  UP/DN=Edit");
 }

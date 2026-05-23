@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "beacon_decoder.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -101,11 +102,10 @@ void BeaconDecoder::handleButton(ButtonEvent ev) {
 
 void BeaconDecoder::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Beacon Decoder");
 
     if (!hasData) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "Waiting for Beacon...");
+        drawCN(u8g2, 10, 35, "等待中...");
         return;
     }
 
@@ -138,13 +138,13 @@ void BeaconDecoder::draw(U8G2& u8g2) {
             snprintf(buf, sizeof(buf), "Vendor:%s", hex);
             break;
         }
-        case 8: snprintf(buf, sizeof(buf), "OK to recapture"); break;
+        case 8: snprintf(buf, sizeof(buf), "按OK重新捕获"); break;
     }
 
     u8g2.drawStr(2, 24, buf);
 
     // Page indicator
     u8g2.setFont(FONT_DATA);
-    snprintf(buf, sizeof(buf), "Page:%d/8  UP/DN", cursor + 1);
+    snprintf(buf, sizeof(buf), "第%d/8页  上下", cursor + 1);
     u8g2.drawStr(0, 63, buf);
 }

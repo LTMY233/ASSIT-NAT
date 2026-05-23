@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "rf_noise.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -85,7 +86,6 @@ void RfNoise::handleButton(ButtonEvent ev) {
 
 void RfNoise::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "RF Noise Floor");
 
     // Current channel and noise level
     u8g2.setFont(FONT_BIG);
@@ -94,8 +94,8 @@ void RfNoise::draw(U8G2& u8g2) {
     u8g2.drawStr(10, 30, buf);
 
     u8g2.setFont(FONT_DATA);
-    snprintf(buf, sizeof(buf), "Noise:%d dBm", noiseFloor);
-    u8g2.drawStr(2, 42, buf);
+    snprintf(buf, sizeof(buf), "噪声:%d dBm", noiseFloor);
+    drawCN(u8g2, 2, 42, buf);
 
     // Noise bar
     uint8_t barW = mapRange(noiseFloor, -95, -30, 0, 100);
@@ -106,10 +106,9 @@ void RfNoise::draw(U8G2& u8g2) {
     }
 
     // Pass count
-    snprintf(buf, sizeof(buf), "Passes:%d %s",
-             samplesCollected, measuring ? "RUN" : "STOP");
-    u8g2.drawStr(0, 57, buf);
+    snprintf(buf, sizeof(buf), "扫描:%d %s",
+             samplesCollected, measuring ? "运行" : "停止");
+    drawCN(u8g2, 0, 57, buf);
 
     // Footer
-    u8g2.drawStr(0, 63, measuring ? "OK:stop UP:reset" : "OK:start UP:reset");
 }

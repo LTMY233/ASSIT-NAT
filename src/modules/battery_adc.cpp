@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "battery_adc.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -51,7 +52,6 @@ void BatteryAdc::handleButton(ButtonEvent ev) {
 
 void BatteryAdc::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Battery");
 
     // Voltage reading
     u8g2.setFont(FONT_BIG);

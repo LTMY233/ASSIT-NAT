@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 0; }
-    const char* getName() const override     { return "HTTP Client"; }
-    const char* getTitle() const override    { return "HTTP Client"; }
+    const char* getName() const override     { return "HTTP客户端"; }
+    const char* getTitle() const override    { return "HTTP客户端"; }
     uint8_t     getId() const override       { return 12; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }
 

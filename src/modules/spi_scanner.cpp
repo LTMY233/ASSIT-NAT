@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "spi_scanner.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -88,22 +89,19 @@ void SpiScanner::handleButton(ButtonEvent ev) {
 
 void SpiScanner::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "SPI Scanner");
 
     if (scanning) {
         u8g2.setFont(FONT_BODY);
-        char buf[20];
-        snprintf(buf, sizeof(buf), "Probing D%d...", (int)scanPin);
-        u8g2.drawStr(2, 30, buf);
+        drawCN(u8g2, 2, 30, "探测中...");
         uint8_t prog = scanPin * OLED_WIDTH / SPI_MAX_DEVICES;
         u8g2.drawFrame(0, 38, OLED_WIDTH, 5);
         u8g2.drawBox(0, 38, prog, 5);
     } else if (devCount == 0) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "No SPI devices found");
+        drawCN(u8g2, 3, 35, "未发现SPI设备");
     } else {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 24, "Found on CS pins:");
+        drawCN(u8g2, 2, 24, "CS引脚发现:");
         for (uint8_t i = 0; i < devCount; i++) {
             char buf[8];
             // Map GPIO back to Dx notation
@@ -120,5 +118,4 @@ void SpiScanner::draw(U8G2& u8g2) {
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, scanning ? "Scanning..." : "OK to rescan");
 }

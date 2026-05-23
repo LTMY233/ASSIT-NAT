@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "traceroute.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -81,7 +82,6 @@ void Traceroute::handleButton(ButtonEvent ev) {
 
 void Traceroute::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Traceroute");
 
     if (tracing) {
         u8g2.setFont(FONT_BODY);

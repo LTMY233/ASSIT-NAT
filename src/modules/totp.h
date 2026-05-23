@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 3; }
-    const char* getName() const override     { return "TOTP Token"; }
-    const char* getTitle() const override    { return "TOTP Token"; }
+    const char* getName() const override     { return "动态口令"; }
+    const char* getTitle() const override    { return "动态口令"; }
     const unsigned char* getIcon() const override { return icon_totp; }
     uint8_t     getId() const override       { return 30; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }

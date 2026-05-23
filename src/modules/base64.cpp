@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "base64.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -145,12 +146,10 @@ void Base64Tool::handleButton(ButtonEvent ev) {
 
 void Base64Tool::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Base64");
 
     // Mode indicator
-    char modeBuf[16];
-    snprintf(modeBuf, sizeof(modeBuf), "Mode: %s", encodeMode ? "Encode" : "Decode");
-    u8g2.drawStr(0, 22, modeBuf);
+    drawCN(u8g2, 0, 22, encodeMode ? "模式:编码" : "模式:解码");
+    u8g2.setFont(FONT_DATA);
 
     u8g2.drawHLine(0, 26, OLED_WIDTH);
 
@@ -167,18 +166,18 @@ void Base64Tool::draw(U8G2& u8g2) {
     // Output
     if (computed) {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 46, "Out:");
+        drawCN(u8g2, 0, 46, "输出:");
+        u8g2.setFont(FONT_DATA);
         // Truncate to fit
         char outDisp[22];
-        if (outputLen > 18) {
-            strncpy(outDisp, output, 17); outDisp[17] = '~'; outDisp[18] = '\0';
+        if (outputLen > 16) {
+            strncpy(outDisp, output, 15); outDisp[15] = '~'; outDisp[16] = '\0';
         } else {
             strCopySafe(outDisp, output, sizeof(outDisp));
         }
-        u8g2.drawStr(20, 46, outDisp);
+        u8g2.drawStr(30, 46, outDisp);
     }
 
     // Footer
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK=Conv  DblUD=Mode  DblUP=+");
 }

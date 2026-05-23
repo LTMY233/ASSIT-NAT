@@ -13,8 +13,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 5; }
-    const char* getName() const override     { return "Ch Switch Time"; }
-    const char* getTitle() const override    { return "Ch Switch Time"; }
+    const char* getName() const override     { return "信道切换"; }
+    const char* getTitle() const override    { return "信道切换"; }
     const unsigned char* getIcon() const override { return icon_ch_switch; }
     uint8_t     getId() const override       { return 62; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

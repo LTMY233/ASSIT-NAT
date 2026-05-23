@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "totp.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -127,7 +128,6 @@ void TotpGenerator::handleButton(ButtonEvent ev) {
 
 void TotpGenerator::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "TOTP Code Generator");
 
     // Code (large centered)
     u8g2.setFont(FONT_BIG);
@@ -145,8 +145,7 @@ void TotpGenerator::draw(U8G2& u8g2) {
     u8g2.drawStr(2, 45, buf);
 
     if (!swRTC.isSynced()) {
-        u8g2.drawStr(2, 63, "RTC not synced");
+        drawCN(u8g2, 2, 63, "RTC未同步");
     } else {
-        u8g2.drawStr(2, 63, "UP/DN: digits (6/7/8)");
     }
 }

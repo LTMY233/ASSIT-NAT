@@ -21,10 +21,11 @@ public:
     void update() override;
     void draw(U8G2& u8g2) override;
     void handleButton(ButtonEvent ev) override;
+    bool handleBack() override;
 
     uint8_t     getCategory() const override { return 0; }
-    const char* getName() const override     { return "WiFi Scanner"; }
-    const char* getTitle() const override    { return "WiFi Scanner"; }
+    const char* getName() const override     { return "WiFi扫描器"; }
+    const char* getTitle() const override    { return "WiFi扫描器"; }
     const unsigned char* getIcon() const override { return icon_wifi_scanner; }
     uint8_t     getId() const override       { return 0; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

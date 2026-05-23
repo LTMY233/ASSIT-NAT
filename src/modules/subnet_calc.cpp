@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "subnet_calc.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -110,7 +111,6 @@ void SubnetCalc::handleButton(ButtonEvent ev) {
 
 void SubnetCalc::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Subnet Calc");
 
     u8g2.setFont(FONT_BODY);
 

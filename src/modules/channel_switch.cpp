@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "channel_switch.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -55,7 +56,6 @@ void ChannelSwitch::handleButton(ButtonEvent ev) {
 
 void ChannelSwitch::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Channel Switch Timer");
 
     u8g2.setFont(FONT_BODY);
     char buf[30];
@@ -70,5 +70,4 @@ void ChannelSwitch::draw(U8G2& u8g2) {
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK measure / ch select");
 }

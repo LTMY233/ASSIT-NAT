@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "channel_hopper.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -108,7 +109,6 @@ void ChannelHopper::handleButton(ButtonEvent ev) {
 
 void ChannelHopper::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Channel Hopper");
 
     // Current channel (big)
     u8g2.setFont(FONT_BIG);
@@ -120,8 +120,8 @@ void ChannelHopper::draw(U8G2& u8g2) {
     // RSSI bar
     u8g2.setFont(FONT_DATA);
     if (rssi > -100) {
-        snprintf(buf, sizeof(buf), "RSSI:%d dBm", rssi);
-        u8g2.drawStr(2, 40, buf);
+        snprintf(buf, sizeof(buf), "信号:%d dBm", rssi);
+        drawCN(u8g2, 2, 40, buf);
 
         // RSSI bar: -95..-30 maps to 0..100 width
         uint8_t barW = mapRange(rssi, -95, -30, 0, 100);
@@ -131,14 +131,13 @@ void ChannelHopper::draw(U8G2& u8g2) {
             u8g2.drawBox(14, 44, barW, 6);
         }
     } else {
-        u8g2.drawStr(2, 40, "RSSI:--- dBm");
+        drawCN(u8g2, 2, 40, "信号:--- dBm");
     }
 
     // Speed indicator
-    snprintf(buf, sizeof(buf), "Speed:%dms %s",
-             hopInterval, running ? "RUN" : "STOP");
-    u8g2.drawStr(2, 54, buf);
+    snprintf(buf, sizeof(buf), "速度:%dms %s",
+             hopInterval, running ? "运行" : "停止");
+    drawCN(u8g2, 2, 54, buf);
 
     // Footer
-    u8g2.drawStr(0, 63, "OK:run UP/DN:speed");
 }

@@ -13,8 +13,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 5; }
-    const char* getName() const override     { return "Gateway Discovery"; }
-    const char* getTitle() const override    { return "Gateway Discovery"; }
+    const char* getName() const override     { return "网关发现"; }
+    const char* getTitle() const override    { return "网关发现"; }
     const unsigned char* getIcon() const override { return icon_gw_disc; }
     uint8_t     getId() const override       { return 60; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

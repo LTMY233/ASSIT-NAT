@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "system_info.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -53,18 +54,17 @@ void SystemInfo::handleButton(ButtonEvent ev) {
 
 void SystemInfo::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "System Info");
 
     u8g2.setFont(FONT_BODY);
     char buf[64];
 
     // Heap
-    snprintf(buf, sizeof(buf), "Heap:%u/%u", freeHeap, totalHeap);
-    u8g2.drawStr(2, 24, buf);
+    snprintf(buf, sizeof(buf), "内存:%u/%u", freeHeap, totalHeap);
+    drawCN(u8g2, 2, 24, buf);
 
     // Flash
-    snprintf(buf, sizeof(buf), "Flash:%uKB", flashSize / 1024);
-    u8g2.drawStr(2, 33, buf);
+    snprintf(buf, sizeof(buf), "存:%uKB", flashSize / 1024);
+    drawCN(u8g2, 2, 33, buf);
 
     // CPU freq
     snprintf(buf, sizeof(buf), "CPU:%uMHz", cpuFreq);
@@ -74,8 +74,8 @@ void SystemInfo::draw(U8G2& u8g2) {
     uint32_t h = uptimeSec / 3600;
     uint32_t m = (uptimeSec % 3600) / 60;
     uint32_t s = uptimeSec % 60;
-    snprintf(buf, sizeof(buf), "Up:%02u:%02u:%02u", h, m, s);
-    u8g2.drawStr(2, 42, buf);
+    snprintf(buf, sizeof(buf), "运行:%02u:%02u:%02u", h, m, s);
+    drawCN(u8g2, 2, 42, buf);
 
     // MAC
     u8g2.drawStr(2, 51, macStr);

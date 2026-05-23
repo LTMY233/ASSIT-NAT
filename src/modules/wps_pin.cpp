@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "wps_pin.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -80,7 +81,6 @@ void WpsPinCalc::handleButton(ButtonEvent ev) {
 
 void WpsPinCalc::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "WPS Pin Calc");
 
     // MAC display
     u8g2.setFont(FONT_BIG);
@@ -103,10 +103,9 @@ void WpsPinCalc::draw(U8G2& u8g2) {
         u8g2.drawStr((OLED_WIDTH - tw) / 2, 52, pin);
 
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 63, "WPS PIN (8 digits)");
+        drawCN(u8g2, 0, 63, "WPS PIN 8位");
     } else {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(10, 48, "OK = Compute PIN");
-        u8g2.drawStr(0, 63, "HoldOK=next byte");
+        drawCN(u8g2, 2, 48, "按OK计算PIN");
     }
 }

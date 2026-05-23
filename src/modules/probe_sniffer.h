@@ -21,8 +21,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 0; }
-    const char* getName() const override     { return "Probe Sniffer"; }
-    const char* getTitle() const override    { return "Probe Sniffer"; }
+    const char* getName() const override     { return "探针嗅探器"; }
+    const char* getTitle() const override    { return "探针嗅探器"; }
     const unsigned char* getIcon() const override { return icon_sniffer; }
     uint8_t     getId() const override       { return 2; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }

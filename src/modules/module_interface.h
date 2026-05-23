@@ -49,6 +49,10 @@ public:
     // ---- Input ----
     virtual void handleButton(ButtonEvent ev) = 0;
 
+    // Return true if module handled back internally (e.g. sub-state → main menu).
+    // Default: return false → system exits the module.
+    virtual bool handleBack() { return false; }
+
     // ---- Metadata ----
     virtual uint8_t     getCategory()    const = 0;  // 0-7
     virtual const char* getName()        const = 0;  // display name, <=20 chars

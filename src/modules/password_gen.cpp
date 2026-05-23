@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "password_gen.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -72,7 +73,6 @@ void PasswordGen::handleButton(ButtonEvent ev) {
 
 void PasswordGen::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Password Generator");
 
     // Password (mono for readability)
     u8g2.setFont(FONT_MONO);
@@ -87,12 +87,13 @@ void PasswordGen::draw(U8G2& u8g2) {
 
     // Char set indicator + hint
     u8g2.setFont(FONT_DATA);
-    char buf[30];
-    snprintf(buf, sizeof(buf), "%dd A%c a%c 1%c !%c OK=gen",
+    char buf[60];
+    snprintf(buf, sizeof(buf), "%d位 大写%c 小写%c 数字%c 符号%c",
              pwdLen,
              useUpper ? '+' : '-',
              useLower ? '+' : '-',
              useDigits ? '+' : '-',
              useSymbols ? '+' : '-');
-    u8g2.drawStr(0, 63, buf);
+    drawCN(u8g2, 0, 55, buf);
+    drawCN(u8g2, 0, 63, "OK=生成");
 }

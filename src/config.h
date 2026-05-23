@@ -25,14 +25,16 @@
 // ============================================================
 // Menu layout
 // ============================================================
-#define MENU_VISIBLE        3     // 3 rows visible (18px * 3 + 10px bottom)
+#define MENU_VISIBLE        3     // 3 rows visible
 #define MENU_ROW_HEIGHT     18    // row height (px)
-#define MENU_TOP_PAD        0     // top padding
-#define MENU_TEXT_X         8     // text X
-#define MENU_SCROLLBAR_X    125   // scrollbar X
-#define MENU_SCROLLBAR_W    3     // scrollbar width
-#define MENU_SEL_RADIUS     3     // selection box radius
-#define MENU_SEL_PAD_X      5     // selection box h-pad
+#define MENU_TOP_PAD         0    // no title bar
+#define MENU_TITLE_H         9    // title text area
+#define MENU_ICON_X          4    // icon X position
+#define MENU_TEXT_X         24    // text X (icon + gap)
+#define MENU_SCROLLBAR_X   125    // scrollbar X
+#define MENU_SCROLLBAR_W     3    // scrollbar width
+#define MENU_SEL_RADIUS      3    // selection box radius
+#define MENU_SEL_PAD_X       5    // selection box h-pad
 #define MENU_ICON_W         16
 #define MENU_ICON_H         16
 

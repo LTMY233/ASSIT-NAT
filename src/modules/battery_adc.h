@@ -11,8 +11,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 7; }
-    const char* getName() const override     { return "Battery ADC"; }
-    const char* getTitle() const override    { return "Battery Monitor"; }
+    const char* getName() const override     { return "电池电压"; }
+    const char* getTitle() const override    { return "电池监测"; }
     uint8_t     getId() const override       { return 84; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }
 

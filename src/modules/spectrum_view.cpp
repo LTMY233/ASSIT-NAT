@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "spectrum_view.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -80,14 +81,13 @@ void SpectrumView::handleButton(ButtonEvent ev) {
 
 void SpectrumView::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Spectrum View");
 
     if (maxRssi <= -95 && !scanning) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "Press OK to scan");
+        drawCN(u8g2, 10, 35, "按OK扫描");
     } else if (scanning) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(20, 35, "Scanning...");
+        drawCN(u8g2, 20, 35, "扫描中...");
     } else {
         // Bar chart: CH1-13, x=5..122, y=16..52
         uint8_t barW = 7;
@@ -126,5 +126,4 @@ void SpectrumView::draw(U8G2& u8g2) {
 
     // Footer
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, autoRefresh ? "Auto:ON UP:off" : "Auto:OFF UP:on");
 }

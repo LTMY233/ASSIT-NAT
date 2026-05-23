@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 3; }
-    const char* getName() const override     { return "MAC Lookup"; }
-    const char* getTitle() const override    { return "MAC OUI Lookup"; }
+    const char* getName() const override     { return "厂商查询"; }
+    const char* getTitle() const override    { return "MAC厂商查询"; }
     const unsigned char* getIcon() const override { return icon_mac; }
     uint8_t     getId() const override       { return 32; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

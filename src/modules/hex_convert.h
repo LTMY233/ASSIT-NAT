@@ -11,8 +11,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 3; }
-    const char* getName() const override     { return "Hex Convert"; }
-    const char* getTitle() const override    { return "Hex Convert"; }
+    const char* getName() const override     { return "十六进制转换"; }
+    const char* getTitle() const override    { return "十六进制转换"; }
     uint8_t     getId() const override       { return 34; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }
     bool        canRunOffline() const override { return true; }

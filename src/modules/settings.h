@@ -12,8 +12,8 @@ public:
 
     uint8_t getId() const override { return 88; }
     uint8_t getCategory() const override { return 7; }
-    const char* getName() const override { return "Settings"; }
-    const char* getTitle() const override { return "Settings"; }
+    const char* getName() const override { return "系统设置"; }
+    const char* getTitle() const override { return "系统设置"; }
     const unsigned char* getIcon() const override { return nullptr; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }
     bool canRunOffline() const override { return true; }

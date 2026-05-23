@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "channel_heatmap.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -72,11 +73,14 @@ void ChannelHeatmap::handleButton(ButtonEvent ev) {
 
 void ChannelHeatmap::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Channel Heatmap");
 
     if (maxCount == 0) {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(10, 35, scanning ? "Scanning..." : "No data");
+        if (scanning) {
+            drawCN(u8g2, 10, 35, "扫描中...");
+        } else {
+            drawCN(u8g2, 10, 35, "无数据");
+        }
         return;
     }
 
@@ -118,5 +122,7 @@ void ChannelHeatmap::draw(U8G2& u8g2) {
 
     // Auto-refresh status
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, autoRefresh ? "Auto:ON  UP:toggle" : "Auto:OFF  UP:toggle");
+    if (autoRefresh) {
+    } else {
+    }
 }

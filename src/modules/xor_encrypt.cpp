@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "xor_encrypt.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -101,13 +102,13 @@ void XorEncrypt::handleButton(ButtonEvent ev) {
 
 void XorEncrypt::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "XOR Encrypt");
 
     // Key field
     u8g2.setFont(FONT_DATA);
-    char kbuf[22];
-    snprintf(kbuf, sizeof(kbuf), "K:%s%s", key, editField == 0 ? "_" : "");
-    u8g2.drawStr(0, 24, kbuf);
+    char kbuf[28];
+    snprintf(kbuf, sizeof(kbuf), "密钥:%s%s", key, editField == 0 ? "_" : "");
+    drawCN(u8g2, 0, 24, kbuf);
+    u8g2.setFont(FONT_DATA);
 
     // Input field
     char ibuf[22];
@@ -116,16 +117,18 @@ void XorEncrypt::draw(U8G2& u8g2) {
     } else {
         strCopySafe(ibuf, input, sizeof(ibuf));
     }
-    char lineBuf[22];
-    snprintf(lineBuf, sizeof(lineBuf), "I:%s%s", ibuf, editField == 1 ? "_" : "");
-    u8g2.drawStr(0, 36, lineBuf);
+    char lineBuf[28];
+    snprintf(lineBuf, sizeof(lineBuf), "输入:%s%s", ibuf, editField == 1 ? "_" : "");
+    drawCN(u8g2, 0, 36, lineBuf);
+    u8g2.setFont(FONT_DATA);
 
     u8g2.drawHLine(0, 40, OLED_WIDTH);
 
     // Output
     if (computed) {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 48, "Out:");
+        drawCN(u8g2, 0, 48, "输出:");
+        u8g2.setFont(FONT_DATA);
         // Show as hex if output has non-printable chars
         char hexOut[40];
         uint8_t hIdx = 0;
@@ -133,9 +136,8 @@ void XorEncrypt::draw(U8G2& u8g2) {
             hIdx += snprintf(hexOut + hIdx, sizeof(hexOut) - hIdx, "%02X", (uint8_t)output[i]);
         }
         hexOut[hIdx] = '\0';
-        u8g2.drawStr(20, 48, hexOut);
+        u8g2.drawStr(30, 48, hexOut);
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK=Crypt  DblUP=Field");
 }

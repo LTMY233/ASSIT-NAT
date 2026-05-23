@@ -11,9 +11,9 @@ public:
     void draw(U8G2& u8g2) override;
     void handleButton(ButtonEvent ev) override;
 
-    uint8_t     getCategory() const override { return 2; }
-    const char* getName() const override     { return "Subnet Calc"; }
-    const char* getTitle() const override    { return "Subnet Calc"; }
+    uint8_t     getCategory() const override { return 5; }
+    const char* getName() const override     { return "子网计算"; }
+    const char* getTitle() const override    { return "子网计算"; }
     const unsigned char* getIcon() const override { return icon_host; }
     uint8_t     getId() const override       { return 69; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }

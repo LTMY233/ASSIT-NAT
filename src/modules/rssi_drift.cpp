@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "rssi_drift.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -45,18 +46,17 @@ void RssiDrift::handleButton(ButtonEvent ev) {
 
 void RssiDrift::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "RSSI Drift Log");
 
     if (!wifiMgr.isConnected()) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "Connect Wi-Fi first");
+        drawCN(u8g2, 10, 35, "请先连接WiFi");
         return;
     }
 
     u8g2.setFont(FONT_DATA);
     char buf[30];
-    snprintf(buf, sizeof(buf), "Now:%d min:%d max:%d", currentRssi, minRssi, maxRssi);
-    u8g2.drawStr(0, 24, buf);
+    snprintf(buf, sizeof(buf), "现:%d 下:%d 上:%d", currentRssi, minRssi, maxRssi);
+    drawCN(u8g2, 0, 24, buf);
 
     // Line chart (-30 to -90 dBm)
     uint8_t baseY = 50;
@@ -68,5 +68,4 @@ void RssiDrift::draw(U8G2& u8g2) {
         u8g2.drawLine(i, y1, i + 1, y2);
     }
 
-    u8g2.drawStr(0, 63, "OK to reset");
 }

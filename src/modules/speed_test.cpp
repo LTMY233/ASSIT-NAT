@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "speed_test.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -131,15 +132,14 @@ void SpeedTest::handleButton(ButtonEvent ev) {
 
 void SpeedTest::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Speed Test");
 
     if (!wifiConnected) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 30, "WiFi disconnected");
-        u8g2.drawStr(10, 42, "OK to connect");
+        drawCN(u8g2, 10, 30, "WiFi未连接");
+        drawCN(u8g2, 10, 42, "按OK连接");
     } else if (running) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 28, "Downloading...");
+        drawCN(u8g2, 2, 28, "下载中...");
 
         // Progress bar
         uint8_t barW = bytesDownloaded * 100 / 100000;
@@ -165,9 +165,11 @@ void SpeedTest::draw(U8G2& u8g2) {
         u8g2.drawStr(2, 42, buf);
     } else {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "OK to start test");
+        drawCN(u8g2, 10, 35, "按OK开始测试");
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, done ? "OK to retest" : "OK:start UP:stop");
+    if (done) {
+    } else {
+    }
 }

@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "wake_on_lan.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -90,7 +91,6 @@ void WakeOnLan::handleButton(ButtonEvent ev) {
 
 void WakeOnLan::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Wake On LAN");
 
     // MAC address display
     u8g2.setFont(FONT_BIG);
@@ -112,10 +112,9 @@ void WakeOnLan::draw(U8G2& u8g2) {
     editHint[editPos] = '^';
     u8g2.drawStr((OLED_WIDTH - u8g2.getStrWidth("^")) / 2, 44, editHint);
 
-    // Status
-    u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 55, status);
-
-    // Footer
-    u8g2.drawStr(0, 63, "HoldOK=toggle Broadcast 9/7");
+    if (sent) {
+        drawCN(u8g2, 20, 55, "已发送!");
+    } else {
+        drawCN(u8g2, 0, 55, "按OK发送唤醒包");
+    }
 }

@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "frame_counter.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -102,22 +103,21 @@ void FrameCounter::handleButton(ButtonEvent ev) {
 
 void FrameCounter::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Frame Counter");
 
     u8g2.setFont(FONT_DATA);
     char buf[30];
 
     // Type stats
-    snprintf(buf, sizeof(buf), "Mgmt:%lu/s Ctrl:%lu/s Data:%lu/s", mgmtRate, ctrlRate, dataRate);
-    u8g2.drawStr(0, 24, buf);
+    snprintf(buf, sizeof(buf), "管:%lu/s 控:%lu/s 数:%lu/s", mgmtRate, ctrlRate, dataRate);
+    drawCN(u8g2, 0, 24, buf);
 
     // Detailed breakdown
-    snprintf(buf, sizeof(buf), "Bcn:%lu Pro:%lu/%lu Dat:%lu Null:%lu", beaconCount, probeReqCount, probeRespCount, dataFrames, nullFrames);
-    u8g2.drawStr(0, 39, buf);
+    snprintf(buf, sizeof(buf), "信标:%lu 探测:%lu/%lu 数:%lu 无:%lu", beaconCount, probeReqCount, probeRespCount, dataFrames, nullFrames);
+    drawCN(u8g2, 0, 39, buf);
 
     snprintf(buf, sizeof(buf), "ACK:%lu RTS:%lu CTS:%lu", ackCount, rtsCount, ctsCount);
     u8g2.drawStr(0, 54, buf);
 
-    snprintf(buf, sizeof(buf), "Total:%lu  OK=Reset", totalPkts);
-    u8g2.drawStr(0, 63, buf);
+    snprintf(buf, sizeof(buf), "计:%lu  确认=重置", totalPkts);
+    drawCN(u8g2, 0, 63, buf);
 }

@@ -80,6 +80,7 @@ void WifiAttack::init() {
     selectedMask = 0; selectedCount = 0; currentTargetIdx = 0;
     currentPps = 0; lastPpsTime = 0; lastPpsCount = 0;
     attacking = false; safetyConfirmed = false;
+    promiscHeld = false; scanStartMs = 0;
     substate = SUB_MENU;
     mScrollY = mScrollYTarget = 0;
     mSelY = mSelYTarget = 0;
@@ -92,6 +93,7 @@ void WifiAttack::enter() {
     menuCursor = 0;
     safetyConfirmed = false;
     attacking = false;
+    promiscHeld = false; scanStartMs = 0;
     targetCount = 0; targetCursor = 0;
     selectedMask = 0; selectedCount = 0;
     selSsid[0] = '\0';
@@ -104,7 +106,11 @@ void WifiAttack::enter() {
 
 void WifiAttack::exit() {
     if (attacking) stopAttack();
-    wifiMgr.promiscuousRelease(getId());
+    WiFi.scanDelete();  // clean up any orphaned async scan
+    if (promiscHeld) {
+        wifiMgr.promiscuousRelease(getId());
+        promiscHeld = false;
+    }
 }
 
 // ============================================================
@@ -112,6 +118,7 @@ void WifiAttack::exit() {
 // ============================================================
 void WifiAttack::startWifiScan() {
     substate = SUB_SCANNING;
+    scanStartMs = millis();
     WiFi.scanNetworks(true, false);
     displayMgr.setDirty();
 }
@@ -164,7 +171,13 @@ void WifiAttack::recomputeMenuTargets() {
 void WifiAttack::update() {
     if (substate == SUB_SCANNING) {
         int n = WiFi.scanComplete();
-        if (n >= 0) processScanResult();
+        if (n >= 0) {
+            processScanResult();
+        } else if (n == WIFI_SCAN_FAILED || millis() - scanStartMs > 6000) {
+            WiFi.scanDelete();
+            substate = SUB_MENU;
+            displayMgr.setDirty();
+        }
         return;
     }
 
@@ -334,6 +347,23 @@ void WifiAttack::handleButton(ButtonEvent ev) {
     displayMgr.setDirty();
 }
 
+bool WifiAttack::handleBack() {
+    if (attacking) {
+        stopAttack();
+        substate = SUB_DONE;
+        displayMgr.setDirty();
+        return true;
+    }
+    if (substate != SUB_MENU) {
+        substate = SUB_MENU;
+        menuCursor = 0;
+        recomputeMenuTargets();
+        displayMgr.setDirty();
+        return true;
+    }
+    return false;
+}
+
 // ============================================================
 // Launch / Stop
 // ============================================================
@@ -362,15 +392,16 @@ void WifiAttack::launchAttack() {
         case WFA_HANDSHAKE:
         case WFA_KARMA:
             wifiMgr.promiscuousAcquire(getId());
+            promiscHeld = true;
             if (selChannel > 0) wifiMgr.setChannel(selChannel);
             break;
         case WFA_ROGUE_AP:
-            wifiMgr.promiscuousRelease(getId());
+            if (promiscHeld) { wifiMgr.promiscuousRelease(getId()); promiscHeld = false; }
             WiFi.mode(WIFI_AP);
             WiFi.softAP("FreeWiFi", nullptr, selChannel > 0 ? selChannel : 6);
             break;
         case WFA_EVIL_TWIN:
-            wifiMgr.promiscuousRelease(getId());
+            if (promiscHeld) { wifiMgr.promiscuousRelease(getId()); promiscHeld = false; }
             WiFi.mode(WIFI_AP);
             WiFi.softAP(selSsid[0] ? selSsid : "FreeWiFi", nullptr, selChannel > 0 ? selChannel : 6);
             break;
@@ -387,7 +418,7 @@ void WifiAttack::stopAttack() {
         case WFA_PMKID:
         case WFA_HANDSHAKE:
         case WFA_KARMA:
-            wifiMgr.promiscuousRelease(getId());
+            if (promiscHeld) { wifiMgr.promiscuousRelease(getId()); promiscHeld = false; }
             break;
         case WFA_ROGUE_AP:
         case WFA_EVIL_TWIN:
@@ -620,7 +651,6 @@ void WifiAttack::drawMenu(U8G2& u8g2) {
 
     // 4. Footer
     u8g2.setFont(FONT_SMALL);
-    u8g2.drawStr(0, 63, "OK:enter  UP/DN");
 }
 
 // ============================================================
@@ -629,7 +659,7 @@ void WifiAttack::drawMenu(U8G2& u8g2) {
 void WifiAttack::drawScanning(U8G2& u8g2) {
     drawCN(u8g2, 0, 12, "扫描中");
     u8g2.setFont(FONT_BODY);
-    u8g2.drawStr(2, 35, "Scanning WiFi...");
+    drawCN(u8g2, 2, 35, "扫描WiFi中...");
     // Animated dots
     uint8_t dots = (millis() / 300) % 4;
     for (uint8_t i = 0; i < dots; i++)
@@ -666,8 +696,8 @@ void WifiAttack::drawSelectTarget(U8G2& u8g2) {
         }
     }
     u8g2.setFont(FONT_DATA);
-    char foot[32];
-    snprintf(foot, sizeof(foot), "Sel:%d/%d Dbl^:all", selectedCount, targetCount);
+    char foot[24];
+    snprintf(foot, sizeof(foot), "已选:%d/%d", selectedCount, targetCount);
     u8g2.drawStr(0, 63, foot);
 }
 
@@ -698,7 +728,7 @@ void WifiAttack::drawConfigure(U8G2& u8g2) {
 
     u8g2.setFont(FONT_DATA);
     if (atkType == WFA_DEV_TESTS) {
-        u8g2.drawStr(2, 30, "Dev Test Index:");
+        u8g2.drawStr(2, 30, "测试索引:");
         char buf[8];
         snprintf(buf, sizeof(buf), "%d", devTestIndex);
         u8g2.drawStr(100, 30, buf);
@@ -708,11 +738,11 @@ void WifiAttack::drawConfigure(U8G2& u8g2) {
             drawCN(u8g2, 2, 42, "无限制");
         } else {
             char buf[16];
-            snprintf(buf, sizeof(buf), "Limit: %d pkts", deauthCount);
+            snprintf(buf, sizeof(buf), "限制: %d 包", deauthCount);
             u8g2.drawStr(2, 24, buf);
         }
         u8g2.setFont(FONT_SMALL);
-        u8g2.drawStr(2, 52, "UP/DN: 0=cont,5-100");
+        u8g2.drawStr(2, 52, "上下:0=连续,5-100");
     } else if (atkType == WFA_BEACON_FLOOD) {
         drawCN(u8g2, 2, 28, "持续时间");
         char buf[8];
@@ -720,12 +750,11 @@ void WifiAttack::drawConfigure(U8G2& u8g2) {
         snprintf(buf, sizeof(buf), ":%d", beaconDurationSec);
         u8g2.drawStr(2 + cnStrWidth("持续时间"), 30, buf);
         u8g2.setFont(FONT_SMALL);
-        u8g2.drawStr(2, 44, "UP/DN +/-5s");
+        u8g2.drawStr(2, 44, "上下 +/-5秒");
     } else {
         drawCN(u8g2, 2, 28, "无需配置");
     }
     u8g2.setFont(FONT_SMALL);
-    u8g2.drawStr(0, 63, "OK:back");
 }
 
 // ============================================================
@@ -740,7 +769,7 @@ void WifiAttack::drawConfirm(U8G2& u8g2) {
         u8g2.setFont(FONT_DATA);
         char t[22]; strCopySafe(t, selSsid, 20);
         char buf[32];
-        snprintf(buf, sizeof(buf), "Tgt: %s", t);
+        snprintf(buf, sizeof(buf), "目标: %s", t);
         u8g2.drawStr(2, 42, buf);
     }
 
@@ -748,10 +777,9 @@ void WifiAttack::drawConfirm(U8G2& u8g2) {
     if (safetyConfirmed) {
         drawCN(u8g2, 2, 56, "按确定开始");
     } else {
-        u8g2.drawStr(2, 52, "OK to confirm");
+        drawCN(u8g2, 2, 52, "按OK确认攻击");
     }
     u8g2.setFont(FONT_SMALL);
-    u8g2.drawStr(0, 63, "OK:confirm");
 }
 
 // ============================================================
@@ -770,7 +798,7 @@ void WifiAttack::drawAttacking(U8G2& u8g2) {
     switch (atkType) {
         case WFA_DEAUTH: {
             char t[24];
-            snprintf(t, sizeof(t), "Tgts:%d ", selectedCount);
+            snprintf(t, sizeof(t), "目标:%d ", selectedCount);
             u8g2.setFont(FONT_SMALL);
             uint8_t shown = 0;
             for (uint8_t i = 0; i < targetCount && shown < 2; i++) {
@@ -783,18 +811,18 @@ void WifiAttack::drawAttacking(U8G2& u8g2) {
             }
             u8g2.drawStr(2, 24, t);
             u8g2.setFont(FONT_DATA);
-            snprintf(buf, sizeof(buf), "PPS:%u Sent:%lu", currentPps, sentCount);
+            snprintf(buf, sizeof(buf), "PPS:%u 已发:%lu", currentPps, sentCount);
             u8g2.drawStr(2, 36, buf);
             if (deauthCount > 0) {
-                snprintf(buf, sizeof(buf), "Limit:%d", deauthCount);
+                snprintf(buf, sizeof(buf), "限制:%d", deauthCount);
                 u8g2.drawStr(70, 36, buf);
             } else {
-                u8g2.drawStr(70, 36, "CONT");
+                u8g2.drawStr(70, 36, "连续");
             }
             break;
         }
         case WFA_BEACON_FLOOD:
-            snprintf(buf, sizeof(buf), "Beacons:%lu", sentCount);
+            snprintf(buf, sizeof(buf), "信标:%lu", sentCount);
             u8g2.drawStr(2, 30, buf);
             break;
         case WFA_PMKID:
@@ -804,25 +832,25 @@ void WifiAttack::drawAttacking(U8G2& u8g2) {
             drawCN(u8g2, 2, 28, "握手捕获中");
             break;
         case WFA_ROGUE_AP:
-            snprintf(buf, sizeof(buf), "Clients:%lu", clientCount);
+            snprintf(buf, sizeof(buf), "客户端:%lu", clientCount);
             u8g2.drawStr(2, 30, buf);
             break;
         case WFA_EVIL_TWIN:
-            snprintf(buf, sizeof(buf), "Clients:%lu", clientCount);
+            snprintf(buf, sizeof(buf), "客户端:%lu", clientCount);
             u8g2.drawStr(2, 30, buf);
             break;
         case WFA_KARMA:
             drawCN(u8g2, 2, 28, "探针响应中");
             break;
         case WFA_DEV_TESTS:
-            snprintf(buf, sizeof(buf), "Test %d running...", devTestIndex);
+            snprintf(buf, sizeof(buf), "测试 %d 运行中...", devTestIndex);
             u8g2.drawStr(2, 30, buf);
             break;
         default: break;
     }
 
     u8g2.setFont(FONT_DATA);
-    snprintf(buf, sizeof(buf), "Time left:%lus", remainingSec);
+    snprintf(buf, sizeof(buf), "剩余:%lu秒", remainingSec);
     u8g2.drawStr(2, 45, buf);
 
     // Progress bar
@@ -864,5 +892,4 @@ void WifiAttack::drawDone(U8G2& u8g2) {
     }
     u8g2.drawStr(2, 42, buf);
     u8g2.setFont(FONT_SMALL);
-    u8g2.drawStr(0, 63, "OK:back to menu");
 }

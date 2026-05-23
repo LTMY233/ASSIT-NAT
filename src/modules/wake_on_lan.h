@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 0; }
-    const char* getName() const override     { return "Wake On LAN"; }
-    const char* getTitle() const override    { return "Wake On LAN"; }
+    const char* getName() const override     { return "网络唤醒"; }
+    const char* getTitle() const override    { return "网络唤醒"; }
     uint8_t     getId() const override       { return 15; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }
 

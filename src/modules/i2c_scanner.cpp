@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "i2c_scanner.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -50,19 +51,19 @@ void I2cScanner::handleButton(ButtonEvent ev) {
 
 void I2cScanner::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "I2C Scanner");
 
     if (scanning) {
         u8g2.setFont(FONT_BODY);
         char buf[20];
-        snprintf(buf, sizeof(buf), "Scan 0x%02X/0x7F", scanAddr);
-        u8g2.drawStr(2, 30, buf);
+        drawCN(u8g2, 2, 30, "扫描 ");
+        snprintf(buf, sizeof(buf), "0x%02X/0x7F", scanAddr);
+        u8g2.drawStr(2 + cnStrWidth("扫描 "), 30, buf);
         uint8_t prog = scanAddr * OLED_WIDTH / 127;
         u8g2.drawFrame(0, 38, OLED_WIDTH, 5);
         u8g2.drawBox(0, 38, prog, 5);
     } else if (devCount == 0) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "No I2C devices");
+        drawCN(u8g2, 5, 35, "未发现I2C设备");
     } else {
         u8g2.setFont(FONT_BODY);
         for (uint8_t i = 0; i < devCount; i++) {
@@ -72,6 +73,4 @@ void I2cScanner::draw(U8G2& u8g2) {
         }
     }
 
-    u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, scanning ? "" : "OK to rescan");
 }

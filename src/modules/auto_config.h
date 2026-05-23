@@ -14,8 +14,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 7; }
-    const char* getName() const override     { return "Auto Config"; }
-    const char* getTitle() const override    { return "Boot Config"; }
+    const char* getName() const override     { return "自动配置"; }
+    const char* getTitle() const override    { return "启动配置"; }
     uint8_t     getId() const override       { return 86; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }
 

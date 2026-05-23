@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "broadcast_storm.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -64,11 +65,10 @@ void BroadcastStorm::handleButton(ButtonEvent ev) {
 
 void BroadcastStorm::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Broadcast Ratio Monitor");
 
     if (alert) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 24, "⚠ Broadcast storm alert!");
+        drawCN(u8g2, 2, 24, "广播风暴警报!");
     }
 
     u8g2.setFont(FONT_BIG);
@@ -79,12 +79,16 @@ void BroadcastStorm::draw(U8G2& u8g2) {
 
     // Threshold bar
     u8g2.setFont(FONT_DATA);
-    snprintf(buf, sizeof(buf), "Thresh:50%%");
-    u8g2.drawStr(2, 48, buf);
+    drawCN(u8g2, 2, 48, "阈值");
+    u8g2.drawStr(2 + cnStrWidth("阈值"), 48, ":50%");
 
     uint8_t barW = broadcastPercent * OLED_WIDTH / 100;
     u8g2.drawFrame(0, 52, OLED_WIDTH, 4);
     u8g2.drawBox(0, 52, barW, 4);
 
-    u8g2.drawStr(0, 63, alert ? "Storm detected!" : "Normal");
+    if (alert) {
+        drawCN(u8g2, 0, 63, "检测到风暴!");
+    } else {
+        drawCN(u8g2, 0, 63, "正常");
+    }
 }

@@ -11,8 +11,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 3; }
-    const char* getName() const override     { return "XOR Encrypt"; }
-    const char* getTitle() const override    { return "XOR Encrypt"; }
+    const char* getName() const override     { return "异或加密"; }
+    const char* getTitle() const override    { return "异或加密"; }
     uint8_t     getId() const override       { return 36; }
     RefreshMode getRefreshMode() const override { return REFRESH_ON_DEMAND; }
     bool        canRunOffline() const override { return true; }

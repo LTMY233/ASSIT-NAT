@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "upnp_discovery.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -102,17 +103,16 @@ void UpnpDiscovery::handleButton(ButtonEvent ev) {
 
 void UpnpDiscovery::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "UPnP/SSDP Discovery");
 
     if (scanning) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 30, "Send M-SEARCH...");
+        drawCN(u8g2, 2, 30, "发送搜索...");
         return;
     }
 
     if (deviceCount == 0) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "No UPnP devices");
+        drawCN(u8g2, 5, 35, "未发现UPnP设备");
     } else {
         u8g2.setFont(FONT_DATA);
         for (uint8_t i = 0; i < deviceCount && i < 2; i++) {
@@ -127,5 +127,5 @@ void UpnpDiscovery::draw(U8G2& u8g2) {
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK to rescan");
+    drawCN(u8g2, 0, 63, "按OK重扫");
 }

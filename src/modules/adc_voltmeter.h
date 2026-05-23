@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 4; }
-    const char* getName() const override     { return "ADC Voltmeter"; }
-    const char* getTitle() const override    { return "ADC Voltmeter"; }
+    const char* getName() const override     { return "ADC电压表"; }
+    const char* getTitle() const override    { return "ADC电压表"; }
     const unsigned char* getIcon() const override { return icon_adc; }
     uint8_t     getId() const override       { return 52; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }

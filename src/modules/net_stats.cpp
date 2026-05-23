@@ -2,6 +2,7 @@
 #include "../config.h"
 #include "../core/display_mgr.h"
 #include "../utils.h"
+#include "../chinese_glyphs.h"
 #include <ESP8266WiFi.h>
 #include <user_interface.h>
 
@@ -74,8 +75,7 @@ void NetStats::handleButton(ButtonEvent ev) {
 }
 
 void NetStats::draw(U8G2& u8g2) {
-    u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Net Stats");
+    drawCN(u8g2, 0, 10, "网络统计");
 
     u8g2.setFont(FONT_DATA);
 
@@ -96,5 +96,5 @@ void NetStats::draw(U8G2& u8g2) {
     snprintf(rateBuf, sizeof(rateBuf), "RX:%luB TX:%luB Pkt:%lu/%lu", rxTotal, txTotal, rxPackets, txPackets);
     u8g2.drawStr(2, 54, rateBuf);
 
-    u8g2.drawStr(0, 63, "Press OK to reset");
+    drawCN(u8g2, 0, 63, "按OK重置");
 }

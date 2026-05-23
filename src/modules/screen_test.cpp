@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "screen_test.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -101,7 +102,6 @@ void ScreenTest::draw(U8G2& u8g2) {
 
     // Title overlay
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Screen Test");
 
     // Pattern name
     u8g2.setFont(FONT_BODY);
@@ -112,5 +112,4 @@ void ScreenTest::draw(U8G2& u8g2) {
     u8g2.drawStr((OLED_WIDTH - tw) / 2, 24, buf);
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "UP/DN cycle patterns");
 }

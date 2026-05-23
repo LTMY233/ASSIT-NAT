@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "uart_monitor.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -99,14 +100,13 @@ void UartMonitor::handleButton(ButtonEvent ev) {
 
 void UartMonitor::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "UART Monitor");
 
     // Baud rate
     u8g2.setFont(FONT_BODY);
     char buf[32];
-    snprintf(buf, sizeof(buf), "Baud:%lu %s",
-             baudRate, passthrough ? "PASS" : "MON");
+    snprintf(buf, sizeof(buf), "Baud:%lu ", baudRate);
     u8g2.drawStr(2, 24, buf);
+    drawCN(u8g2, 2 + u8g2.getStrWidth(buf), 25, passthrough ? "直传" : "监听");
 
     // RX/TX counts
     snprintf(buf, sizeof(buf), "RX:%lu", rxCount);
@@ -135,5 +135,4 @@ void UartMonitor::draw(U8G2& u8g2) {
 
     // Footer
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK:pass UP/DN:baud");
 }

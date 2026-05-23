@@ -12,8 +12,8 @@ public:
     void handleButton(ButtonEvent ev) override;
 
     uint8_t     getCategory() const override { return 0; }
-    const char* getName() const override     { return "Net Stats"; }
-    const char* getTitle() const override    { return "Net Throughput"; }
+    const char* getName() const override     { return "网络统计"; }
+    const char* getTitle() const override    { return "网络吞吐量"; }
     const unsigned char* getIcon() const override { return icon_net_stats; }
     uint8_t     getId() const override       { return 7; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }

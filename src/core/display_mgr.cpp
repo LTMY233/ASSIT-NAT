@@ -8,6 +8,7 @@ DisplayMgr displayMgr;
 void DisplayMgr::init() {
     Wire.begin(PIN_OLED_SDA, PIN_OLED_SCL);
     Wire.setClock(I2C_SPEED_HZ);
+    delay(300);  // let boost converter + OLED power stabilize
     u8g2.begin();
     u8g2.setContrast(128);
 
@@ -23,17 +24,7 @@ void DisplayMgr::drawSplash() {
     u8g2.setFont(FONT_BIG);
     const char* title = "ASSIT-NAT";
     uint8_t tw = u8g2.getStrWidth(title);
-    u8g2.drawStr((OLED_WIDTH - tw) / 2, 22, title);
-
-    u8g2.setFont(FONT_BODY);
-    const char* sub = "Swiss Army Knife";
-    tw = u8g2.getStrWidth(sub);
-    u8g2.drawStr((OLED_WIDTH - tw) / 2, 36, sub);
-
-    u8g2.setFont(FONT_TITLE);
-    const char* author = "by:ltmy_233";
-    tw = u8g2.getStrWidth(author);
-    u8g2.drawStr((OLED_WIDTH - tw) / 2, 52, author);
+    u8g2.drawStr((OLED_WIDTH - tw) / 2, 34, title);
 }
 
 void DisplayMgr::update(SystemState sysState, ModuleInterface* activeModule) {

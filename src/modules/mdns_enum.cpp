@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "mdns_enum.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -128,17 +129,16 @@ void MdnsEnum::handleButton(ButtonEvent ev) {
 
 void MdnsEnum::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "mDNS Enum");
 
     if (scanning) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 30, "Searching...");
+        drawCN(u8g2, 2, 30, "搜索中...");
         return;
     }
 
     if (serviceCount == 0) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "None found");
+        drawCN(u8g2, 10, 35, "未发现");
     } else {
         u8g2.setFont(FONT_DATA);
         for (uint8_t i = 0; i < serviceCount && i < 2; i++) {
@@ -153,5 +153,5 @@ void MdnsEnum::draw(U8G2& u8g2) {
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "Press OK to rescan");
+    drawCN(u8g2, 0, 63, "按OK重扫");
 }

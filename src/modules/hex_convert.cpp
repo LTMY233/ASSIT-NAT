@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "hex_convert.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -113,12 +114,10 @@ void HexConvert::handleButton(ButtonEvent ev) {
 
 void HexConvert::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Hex Convert");
 
     // Mode
-    char modeBuf[20];
-    snprintf(modeBuf, sizeof(modeBuf), "%s", hexToAscii ? "Hex -> ASCII" : "ASCII -> Hex");
-    u8g2.drawStr(0, 22, modeBuf);
+    drawCN(u8g2, 0, 22, hexToAscii ? "十六进制->ASCII" : "ASCII->十六进制");
+    u8g2.setFont(FONT_DATA);
 
     u8g2.drawHLine(0, 26, OLED_WIDTH);
 
@@ -135,16 +134,16 @@ void HexConvert::draw(U8G2& u8g2) {
     // Output
     if (computed) {
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 46, "Out:");
+        drawCN(u8g2, 0, 46, "输出:");
+        u8g2.setFont(FONT_DATA);
         char outDisp[22];
-        if (outputLen > 18) {
-            strncpy(outDisp, output, 17); outDisp[17] = '~'; outDisp[18] = '\0';
+        if (outputLen > 16) {
+            strncpy(outDisp, output, 15); outDisp[15] = '~'; outDisp[16] = '\0';
         } else {
             strCopySafe(outDisp, output, sizeof(outDisp));
         }
-        u8g2.drawStr(20, 46, outDisp);
+        u8g2.drawStr(30, 46, outDisp);
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK=Conv  DblUD=Mode");
 }

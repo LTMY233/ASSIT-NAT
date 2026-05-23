@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "auto_config.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -12,10 +13,10 @@ void AutoConfig::init() {
     debugMode = false;
     selectedSetting = 0;
 
-    strcpy(settingNames[0], "Auto-start Module");
-    strcpy(settingNames[1], "Brightness");
-    strcpy(settingNames[2], "WiFi on Boot");
-    strcpy(settingNames[3], "Debug Mode");
+    strcpy(settingNames[0], "自启动");
+    strcpy(settingNames[1], "亮度");
+    strcpy(settingNames[2], "开机连WiFi");
+    strcpy(settingNames[3], "调试模式");
 }
 
 void AutoConfig::enter() {
@@ -57,16 +58,16 @@ void AutoConfig::saveConfig() {
 const char* AutoConfig::getSettingValue(uint8_t idx, char* buf, size_t sz) {
     switch (idx) {
         case 0:
-            if (autoStartModule == 0) return "None";
+            if (autoStartModule == 0) return "无";
             snprintf(buf, sz, "ID:%u", autoStartModule);
             return buf;
         case 1:
             snprintf(buf, sz, "%u", screenBrightness);
             return buf;
         case 2:
-            return wifiOnBoot ? "ON" : "OFF";
+            return wifiOnBoot ? "开" : "关";
         case 3:
-            return debugMode ? "ON" : "OFF";
+            return debugMode ? "开" : "关";
         default: return "?";
     }
 }
@@ -113,7 +114,6 @@ void AutoConfig::handleButton(ButtonEvent ev) {
 
 void AutoConfig::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Auto Config");
 
     uint8_t y = 24;
     char buf[32];
@@ -125,10 +125,9 @@ void AutoConfig::draw(U8G2& u8g2) {
         snprintf(buf, sizeof(buf), "%c %s: %s",
                  (i == selectedSetting) ? '>' : ' ',
                  settingNames[i], val);
-        u8g2.drawStr(2, y, buf);
+        drawCN(u8g2, 2, y, buf);
         y += 10;
     }
 
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 63, "OK=toggle  UP/DN=select");
 }

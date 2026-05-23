@@ -11,9 +11,9 @@ public:
     void draw(U8G2& u8g2) override;
     void handleButton(ButtonEvent ev) override;
 
-    uint8_t     getCategory() const override { return 0; }
-    const char* getName() const override     { return "Channel Hopper"; }
-    const char* getTitle() const override    { return "Channel Hopper"; }
+    uint8_t     getCategory() const override { return 6; }
+    const char* getName() const override     { return "信道跳频器"; }
+    const char* getTitle() const override    { return "信道跳频器"; }
     const unsigned char* getIcon() const override { return icon_ch_switch; }
     uint8_t     getId() const override       { return 26; }
     RefreshMode getRefreshMode() const override { return REFRESH_CONTINUOUS; }

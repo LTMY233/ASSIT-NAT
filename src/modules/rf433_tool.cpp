@@ -7,16 +7,21 @@
 
 ModuleInterface* createRf433Tool() { return new Rf433Tool(); }
 
+// Frequency sweep table for RF scan (common ISM/LPD freqs, MHz)
+static const uint16_t SWEEP_FREQS[] = {315, 330, 350, 370, 390, 410, 418, 433, 440, 450};
+static const uint8_t SWEEP_COUNT = 10;
+#define SWEEP_DWELL_MS 3000  // listen 3 seconds per frequency
+
 const char* Rf433Tool::getTitle() const {
     switch (state) {
-        case RF_MENU:        return "433MHz Tool";
-        case RF_SCAN:        return "433 Scan";
-        case RF_BROWSE:      return "Captures";
-        case RF_SEND:        return "433 Send";
-        case RF_RAW_EDIT:    return "Raw Edit";
-        case RF_DEVDB:       return "Device DB";
-        case RF_TEMP_SENSOR: return "Temp Sensor";
-        default: return "433MHz";
+        case RF_MENU:        return "RF工具箱";
+        case RF_SCAN:        return "射频扫描";
+        case RF_BROWSE:      return "已捕获码";
+        case RF_COPY_SEND:   return "复制发送";
+        case RF_CUSTOM_SEND: return "自定义发送";
+        case RF_DEVDB:       return "设备库";
+        case RF_TEMP_SENSOR: return "温度传感";
+        default: return "RF工具箱";
     }
 }
 
@@ -38,6 +43,11 @@ void Rf433Tool::init() {
     scanSignalCnt = 0; scanRawCnt = 0; scanAvgUs = 0;
     txCode = 0x556688; txBits = 24; txProto = 1;
     txPulseUs = 320; txEditPos = 0; txEditMode = 0; txCount = 0;
+    txFeedback = 0; selectedMask = 0; copyCursor = 0;
+    rfFreq = RF433_FREQ_DFL;
+    scanSweep = false; scanSweepIdx = 0; scanLastSweepMs = 0;
+    scanRawActivityMs = 0;
+    scanPinLowCnt = 0; scanPinPollCnt = 0;
     dbCursor = 0; dbDetail = false;
     tempVal = 0; humidity = 0; tempTs = 0;
     state = RF_MENU;
@@ -71,8 +81,13 @@ void Rf433Tool::exit() {
 void Rf433Tool::enableRX() {
     if (rxActive) return;
     disableTX();
-    pinMode(PIN_RX433, INPUT);
-    rcSwitch.enableReceive(PIN_RX433);
+    pinMode(PIN_RX433, INPUT_PULLUP);
+    rcSwitch.enableReceive(digitalPinToInterrupt(PIN_RX433));
+    // Wider tolerance for frequencies far from 433 MHz
+    int offset = abs((int)rfFreq - 433);
+    int tolerance = 60 + offset / 2;  // 60% base + extra for off-center freqs
+    if (tolerance > 90) tolerance = 90;
+    rcSwitch.setReceiveTolerance(tolerance);
     rxActive = true;
 }
 
@@ -204,24 +219,41 @@ void Rf433Tool::update() {
     }
 
     if (state == RF_SCAN || state == RF_TEMP_SENSOR) {
-        if (!rcSwitch.available()) return;
+        // Direct GPIO poll: SYN480R DATA pin goes LOW when carrier detected
+        if (state == RF_SCAN) {
+            scanPinPollCnt++;
+            if (digitalRead(PIN_RX433) == LOW) scanPinLowCnt++;
+        }
+
+        // Check raw timings even when no valid protocol decoded
+        unsigned int* raw = rcSwitch.getReceivedRawdata();
+        bool rawActivity = (raw && raw[0] > 0);
+        if (rawActivity) {
+            scanRawCnt = 0;
+            for (int i = 0; i < RF433_MAX_PULSES && raw[i] > 0; i++) {
+                scanRaw[i] = raw[i];
+                scanRawCnt++;
+            }
+            analyzePulses();
+        }
+
+        if (!rcSwitch.available()) {
+            if (rawActivity) {
+                // Show raw pulse count even without decode
+                scanRawActivityMs = millis();
+                displayMgr.setDirty();
+            }
+            return;
+        }
+
         unsigned long val = rcSwitch.getReceivedValue();
         uint8_t bits = rcSwitch.getReceivedBitlength();
         uint8_t proto = rcSwitch.getReceivedProtocol();
-        unsigned int* raw = rcSwitch.getReceivedRawdata();
 
         if (state == RF_SCAN) {
             scanLastVal   = val;
             scanLastBits  = bits;
             scanLastProto = proto;
-            scanRawCnt = 0;
-            if (raw) {
-                for (int i = 0; i < RF433_MAX_PULSES && raw[i] > 0; i++) {
-                    scanRaw[i] = raw[i];
-                    scanRawCnt++;
-                }
-            }
-            analyzePulses();
             scanSignalCnt++;
             addCode(val, bits, proto);
         } else {
@@ -229,6 +261,7 @@ void Rf433Tool::update() {
             addCode(val, bits, proto);
         }
         rcSwitch.resetAvailable();
+        scanRawActivityMs = 0;
         displayMgr.setDirty();
     }
 }
@@ -239,23 +272,24 @@ void Rf433Tool::update() {
 void Rf433Tool::handleButton(ButtonEvent ev) {
     switch (state) {
         case RF_MENU:
-            if (ev == BTN_UP_SHORT && menuCursor > 0) { menuCursor--; recomputeMenuTargets(); }
-            if (ev == BTN_DOWN_SHORT && menuCursor < 5) { menuCursor++; recomputeMenuTargets(); }
-            if (ev == BTN_UP_REPEAT && menuCursor > 0) { menuCursor--; recomputeMenuTargets(); }
-            if (ev == BTN_DOWN_REPEAT && menuCursor < 5) { menuCursor++; recomputeMenuTargets(); }
+            if (ev == BTN_UP_SHORT || ev == BTN_UP_REPEAT) {
+                menuCursor = (menuCursor == 0) ? 5 : menuCursor - 1;
+                recomputeMenuTargets();
+            }
+            if (ev == BTN_DOWN_SHORT || ev == BTN_DOWN_REPEAT) {
+                menuCursor = (menuCursor >= 5) ? 0 : menuCursor + 1;
+                recomputeMenuTargets();
+            }
             if (ev == BTN_OK_SHORT) {
                 disableRX(); disableTX();
                 switch (menuCursor) {
-                    case 0: state = RF_SCAN;   enableRX(); scanSignalCnt = 0; break;
+                    case 0: state = RF_SCAN; enableRX(); scanSignalCnt = 0;
+                            scanSweep = false; scanSweepIdx = 0; break;
                     case 1: state = RF_BROWSE; codeCursor = codeCount > 0 ? codeCount-1 : 0; break;
-                    case 2: state = RF_SEND; enableTX();
-                            if (codeCount > 0) {
-                                txCode = codes[codeCursor].value;
-                                txBits = codes[codeCursor].bitLength;
-                                txProto = codes[codeCursor].protocol;
-                            }
-                            txCount = 0; break;
-                    case 3: state = RF_RAW_EDIT; enableTX(); txCount = 0; break;
+                    case 2: state = RF_COPY_SEND;
+                            selectedMask = 0; copyCursor = 0; txCount = 0; break;
+                    case 3: state = RF_CUSTOM_SEND; enableTX();
+                            txCount = 0; txFeedback = 0; break;
                     case 4: state = RF_DEVDB; dbCursor = 0; dbDetail = false; break;
                     case 5: state = RF_TEMP_SENSOR; enableRX(); tempVal = 0; tempTs = 0; break;
                 }
@@ -263,6 +297,12 @@ void Rf433Tool::handleButton(ButtonEvent ev) {
             break;
 
         case RF_SCAN:
+            if (ev == BTN_UP_SHORT && codeCount > 0) {
+                codeCursor = (codeCursor == 0) ? codeCount - 1 : codeCursor - 1;
+            }
+            if (ev == BTN_DOWN_SHORT && codeCount > 0) {
+                codeCursor = (codeCursor >= codeCount - 1) ? 0 : codeCursor + 1;
+            }
             if (ev == BTN_OK_SHORT) {
                 scanSignalCnt = 0; scanLastVal = 0;
                 scanRawCnt = 0; scanAvgUs = 0;
@@ -270,8 +310,12 @@ void Rf433Tool::handleButton(ButtonEvent ev) {
             break;
 
         case RF_BROWSE:
-            if (ev == BTN_UP_SHORT && codeCursor > 0) codeCursor--;
-            if (ev == BTN_DOWN_SHORT && codeCursor < codeCount - 1) codeCursor++;
+            if (ev == BTN_UP_SHORT) {
+                codeCursor = (codeCursor == 0) ? codeCount - 1 : codeCursor - 1;
+            }
+            if (ev == BTN_DOWN_SHORT) {
+                codeCursor = (codeCursor >= codeCount - 1) ? 0 : codeCursor + 1;
+            }
             if (ev == BTN_OK_SHORT && codeCount > 0) {
                 // Send immediately like 射频管家
                 enableTX();
@@ -283,40 +327,70 @@ void Rf433Tool::handleButton(ButtonEvent ev) {
             }
             break;
 
-        case RF_SEND:
+        case RF_COPY_SEND:
+            if (codeCount == 0) break;
+            if (ev == BTN_UP_SHORT) {
+                copyCursor = (copyCursor == 0) ? codeCount - 1 : copyCursor - 1;
+            }
+            if (ev == BTN_DOWN_SHORT) {
+                copyCursor = (copyCursor >= codeCount - 1) ? 0 : copyCursor + 1;
+            }
+            if (ev == BTN_OK_SHORT) {
+                // Toggle selection
+                if (selectedMask & (1 << copyCursor))
+                    selectedMask &= ~(1 << copyCursor);
+                else
+                    selectedMask |= (1 << copyCursor);
+            }
+            if (ev == BTN_UP_LONG) {
+                // Send all selected sequentially
+                if (selectedMask) {
+                    enableTX();
+                    for (uint8_t i = 0; i < codeCount; i++) {
+                        if (selectedMask & (1 << i)) {
+                            rcSwitch.setProtocol(codes[i].protocol);
+                            rcSwitch.setRepeatTransmit(3);
+                            rcSwitch.send(codes[i].value, codes[i].bitLength);
+                            delay(80); // gap between sends
+                        }
+                    }
+                    txCount++;
+                    txFeedback = millis();
+                    disableTX();
+                }
+            }
+            break;
+
+        case RF_CUSTOM_SEND:
+            if (ev == BTN_UP_SHORT) {
+                // Cycle bit length: 12→24→32→12
+                if (txBits >= 32) txBits = 12;
+                else if (txBits >= 24) txBits = 32;
+                else txBits = 24;
+            }
+            if (ev == BTN_DOWN_SHORT) {
+                if (txBits <= 12) txBits = 32;
+                else if (txBits <= 24) txBits = 12;
+                else txBits = 24;
+            }
+            if (ev == BTN_UP_LONG) {
+                txPulseUs += 50;
+                if (txPulseUs > 2000) txPulseUs = 2000;
+            }
+            if (ev == BTN_DOWN_LONG) {
+                if (txPulseUs > 100) txPulseUs -= 50;
+                else txPulseUs = 100;
+            }
             if (ev == BTN_OK_SHORT) {
                 rcSwitch.setProtocol(txProto);
+                rcSwitch.setPulseLength(txPulseUs);
                 rcSwitch.setRepeatTransmit(5);
                 rcSwitch.send(txCode, txBits);
                 txCount++;
+                txFeedback = millis();
             }
-            if (ev == BTN_UP_SHORT && txProto < 7) txProto++;
-            if (ev == BTN_DOWN_SHORT && txProto > 1) txProto--;
-            if (ev == BTN_UP_LONG) { state = RF_MENU; disableTX(); }
-            break;
-
-        case RF_RAW_EDIT:
-            if (ev == BTN_UP_LONG)   { txEditMode = (txEditMode + 1) % 3; txEditPos = 0; }
-            if (ev == BTN_DOWN_LONG) { txEditMode = (txEditMode + 2) % 3; txEditPos = 0; }
-            switch (txEditMode) {
-                case 0: // bit edit
-                    if (ev == BTN_UP_SHORT && txEditPos < txBits - 1) txEditPos++;
-                    if (ev == BTN_DOWN_SHORT && txEditPos > 0) txEditPos--;
-                    if (ev == BTN_OK_SHORT) {
-                        txCode ^= (1UL << (txBits - 1 - txEditPos));
-                    }
-                    break;
-                case 1: // protocol
-                    if (ev == BTN_UP_SHORT && txProto < 7) txProto++;
-                    if (ev == BTN_DOWN_SHORT && txProto > 1) txProto--;
-                    break;
-                case 2: // pulse
-                    if (ev == BTN_UP_SHORT) txPulseUs += 10;
-                    if (ev == BTN_DOWN_SHORT && txPulseUs > 10) txPulseUs -= 10;
-                    break;
-            }
-            if (ev == BTN_OK_DOUBLE || ev == BTN_OK_LONG) { /* do nothing - handled by core */ }
-            if (ev == BTN_UP_LONG || ev == BTN_DOWN_LONG) { /* handled above */ }
+            if (ev == BTN_UP_DOUBLE && txProto < 7) txProto++;
+            if (ev == BTN_DOWN_DOUBLE && txProto > 1) txProto--;
             break;
 
         case RF_DEVDB:
@@ -331,8 +405,12 @@ void Rf433Tool::handleButton(ButtonEvent ev) {
                     disableTX();
                 }
             } else {
-                if (ev == BTN_UP_SHORT && dbCursor > 0) dbCursor--;
-                if (ev == BTN_DOWN_SHORT && dbCursor < RF433_DB_COUNT - 1) dbCursor++;
+                if (ev == BTN_UP_SHORT) {
+                    dbCursor = (dbCursor == 0) ? RF433_DB_COUNT - 1 : dbCursor - 1;
+                }
+                if (ev == BTN_DOWN_SHORT) {
+                    dbCursor = (dbCursor >= RF433_DB_COUNT - 1) ? 0 : dbCursor + 1;
+                }
                 if (ev == BTN_OK_SHORT) dbDetail = true;
             }
             break;
@@ -344,6 +422,19 @@ void Rf433Tool::handleButton(ButtonEvent ev) {
     displayMgr.setDirty();
 }
 
+bool Rf433Tool::handleBack() {
+    if (state != RF_MENU) {
+        disableRX();
+        disableTX();
+        state = RF_MENU;
+        menuCursor = 0;
+        recomputeMenuTargets();
+        displayMgr.setDirty();
+        return true;
+    }
+    return false;
+}
+
 // ============================================================
 // Draw dispatch
 // ============================================================
@@ -352,8 +443,8 @@ void Rf433Tool::draw(U8G2& u8g2) {
         case RF_MENU:        drawMenu(u8g2); break;
         case RF_SCAN:        drawScan(u8g2); break;
         case RF_BROWSE:      drawBrowse(u8g2); break;
-        case RF_SEND:        drawSend(u8g2); break;
-        case RF_RAW_EDIT:    drawRawEdit(u8g2); break;
+        case RF_COPY_SEND:   drawCopySend(u8g2); break;
+        case RF_CUSTOM_SEND: drawCustomSend(u8g2); break;
         case RF_DEVDB:       drawDevDb(u8g2); break;
         case RF_TEMP_SENSOR: drawTemp(u8g2); break;
     }
@@ -364,10 +455,10 @@ void Rf433Tool::draw(U8G2& u8g2) {
 // ============================================================
 void Rf433Tool::drawMenu(U8G2& u8g2) {
     static const char* itemCN[6] = {
-        "扫描433",
+        "射频扫描",
         "已捕获码",
-        "发送433",
-        "原始编辑",
+        "复制发送",
+        "自定义发送",
         "设备库",
         "温度传感",
     };
@@ -381,13 +472,15 @@ void Rf433Tool::drawMenu(U8G2& u8g2) {
         drawCN(u8g2, MENU_TEXT_X, y, itemCN[i]);
     }
 
-    // 2. Scrollbar
+    // 2. Scrollbar (animated)
     u8g2.drawVLine(MENU_SCROLLBAR_X + 1, 0, OLED_HEIGHT);
     float sbH = OLED_HEIGHT * 3.0f / 6.0f;
-    float sbY = (OLED_HEIGHT - sbH) * menuCursor / 5.0f;
+    float maxScroll = (6 - 3) * MENU_ROW_HEIGHT;
+    float frac = (maxScroll > 0) ? mScrollY / maxScroll : 0;
+    float sbY = (OLED_HEIGHT - sbH) * frac;
     u8g2.drawBox(MENU_SCROLLBAR_X, (int)sbY, MENU_SCROLLBAR_W, max(4, (int)sbH));
 
-    // 3. XOR selection box
+    // 3. XOR selection box (animated)
     int tw = cnStrWidth(itemCN[menuCursor]);
     mSelWTarget = tw + MENU_SEL_PAD_X * 2;
     int bw = max(20, (int)mSelW);
@@ -397,137 +490,167 @@ void Rf433Tool::drawMenu(U8G2& u8g2) {
 
     // 4. Footer
     u8g2.setFont(FONT_SMALL);
-    u8g2.drawStr(0, 63, "OK:enter  UP/DN");
 }
 
 // ============================================================
 // Draw — RF_SCAN
 // ============================================================
 void Rf433Tool::drawScan(U8G2& u8g2) {
-    drawCN(u8g2, 0, 12, "扫描433");
+    // Top line: fixed frequency + signal count
+    u8g2.setFont(FONT_DATA);
+    char top[24];
+    snprintf(top, sizeof(top), "433.92MHz  %lu sigs", scanSignalCnt);
+    u8g2.drawStr(0, 9, top);
+
+    // Show raw pulse activity indicator (receiver is hearing something)
+    bool rawRecent = (scanRawActivityMs && millis() - scanRawActivityMs < 1000);
+
+    // Live GPIO pin state: LOW = carrier detected by SYN480R
+    u8g2.setFont(FONT_BODY);
+    bool pinLo = (digitalRead(PIN_RX433) == LOW);
+    char pinLine[32];
+    if (scanPinPollCnt > 0) {
+        uint32_t pct = (uint32_t)((uint64_t)scanPinLowCnt * 100 / scanPinPollCnt);
+        snprintf(pinLine, sizeof(pinLine), "PIN:%s L=%lu/%lu %lu%%",
+                 pinLo ? "L" : "H", scanPinLowCnt, scanPinPollCnt, pct);
+    } else {
+        snprintf(pinLine, sizeof(pinLine), "PIN:%s", pinLo ? "L" : "H");
+    }
+    u8g2.drawStr(0, 20, pinLine);
 
     if (scanSignalCnt == 0) {
-        u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "Scanning 433MHz...");
-    } else {
-        char buf[32];
-        // Protocol line with name
-        snprintf(buf, sizeof(buf), "Proto: %s", protoName(scanLastProto));
-        u8g2.drawStr(2, 20, buf);
-        // Pulse width
-        snprintf(buf, sizeof(buf), "Pulse: %dus", scanAvgUs);
-        u8g2.drawStr(2, 30, buf);
-        // Decimal value
-        snprintf(buf, sizeof(buf), "DEC: %lu", scanLastVal);
-        u8g2.drawStr(2, 40, buf);
-        // Bits + binary preview (first 8 bits)
-        char bin[17]; bitsToStr(scanLastVal, scanLastBits > 16 ? 16 : scanLastBits, bin, sizeof(bin));
-        snprintf(buf, sizeof(buf), "Bits:%d BIN:%s", scanLastBits, bin);
-        u8g2.setFont(FONT_SMALL);
-        u8g2.drawStr(2, 53, buf);
+        drawCN(u8g2, 20, 38, "监听中...");
+        if (rawRecent) {
+            u8g2.setFont(FONT_BODY);
+            char rbuf[24];
+            snprintf(rbuf, sizeof(rbuf), "RAW:%dpls %dus", scanRawCnt, scanAvgUs);
+            u8g2.drawStr(10, 50, rbuf);
+        }
+        return;
     }
-    u8g2.setFont(FONT_DATA);
-    char foot[24];
-    snprintf(foot, sizeof(foot), "Sigs:%lu OK:clear", scanSignalCnt);
-    u8g2.drawStr(0, 63, foot);
+
+    // Show recent captured codes as a list (last 3)
+    u8g2.setFont(FONT_BODY);
+    for (uint8_t i = 0; i < 3 && i < codeCount; i++) {
+        uint8_t y = 30 + i * 14;
+        uint8_t idx = codeCount - 1 - i;
+        char buf[40];
+        snprintf(buf, sizeof(buf), "#%d: %lu %db %s",
+                 idx + 1, codes[idx].value, codes[idx].bitLength,
+                 protoName(codes[idx].protocol));
+        u8g2.drawStr(2, y, buf);
+    }
+    if (rawRecent && scanSignalCnt > 0) {
+        u8g2.setFont(FONT_SMALL);
+        char rbuf[20];
+        snprintf(rbuf, sizeof(rbuf), "raw:%dpls", scanRawCnt);
+        u8g2.drawStr(70, 63, rbuf);
+    }
 }
 
 // ============================================================
 // Draw — RF_BROWSE
 // ============================================================
 void Rf433Tool::drawBrowse(U8G2& u8g2) {
-    drawCN(u8g2, 0, 12, "已捕获码");
-
     if (codeCount == 0) {
         drawCN(u8g2, 10, 38, "无捕获信号");
-    } else {
-        for (uint8_t i = 0; i < 3 && i < codeCount; i++) {
-            uint8_t y = 22 + i * 15;
-            uint8_t idx = codeCount - 1 - i;
-            if (idx == codeCursor) {
-                u8g2.drawBox(0, y - 11, OLED_WIDTH, 14);
-                u8g2.setDrawColor(0);
-            }
-            char buf[40];
-            snprintf(buf, sizeof(buf), "#%d: %lu %db %s",
-                     idx + 1, codes[idx].value, codes[idx].bitLength,
-                     protoName(codes[idx].protocol));
-            u8g2.setFont(FONT_DATA);
-            u8g2.drawStr(2, y, buf);
-            if (idx == codeCursor) u8g2.setDrawColor(1);
-        }
+        return;
     }
-    u8g2.setFont(FONT_SMALL);
-    char foot[24];
-    snprintf(foot, sizeof(foot), "%d codes  OK:send", codeCount);
-    u8g2.drawStr(0, 63, foot);
+
+    // Show list of captured codes
+    for (uint8_t i = 0; i < 3 && i < codeCount; i++) {
+        uint8_t y = 16 + i * 16;
+        uint8_t idx = codeCount - 1 - i;
+        if (idx == codeCursor) {
+            u8g2.drawBox(0, y - 12, OLED_WIDTH, 14);
+            u8g2.setDrawColor(0);
+        }
+        char buf[40];
+        snprintf(buf, sizeof(buf), "#%d: %lu %db %s",
+                 idx + 1, codes[idx].value, codes[idx].bitLength,
+                 protoName(codes[idx].protocol));
+        u8g2.setFont(FONT_DATA);
+        u8g2.drawStr(2, y, buf);
+        if (idx == codeCursor) u8g2.setDrawColor(1);
+    }
+
+    // Detail for selected code
+    uint8_t ci = codeCursor;
+    u8g2.setFont(FONT_BODY);
+    char dbuf[32];
+    snprintf(dbuf, sizeof(dbuf), "DEC:%lu B:%d P:%d",
+             codes[ci].value, codes[ci].bitLength, codes[ci].protocol);
+    u8g2.drawStr(0, 63, dbuf);
 }
 
 // ============================================================
-// Draw — RF_SEND
+// Draw — RF_COPY_SEND (multi-select → sequential send)
 // ============================================================
-void Rf433Tool::drawSend(U8G2& u8g2) {
-    drawCN(u8g2, 0, 12, "发送433");
+void Rf433Tool::drawCopySend(U8G2& u8g2) {
+    if (codeCount == 0) {
+        drawCN(u8g2, 10, 38, "无捕获信号");
+        return;
+    }
 
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Code: %lu", txCode);
-    u8g2.drawStr(2, 20, buf);
-    snprintf(buf, sizeof(buf), "Bits: %d", txBits);
-    u8g2.drawStr(2, 30, buf);
-    snprintf(buf, sizeof(buf), "Proto: %s (#%d)", protoName(txProto), txProto);
-    u8g2.drawStr(2, 40, buf);
-    snprintf(buf, sizeof(buf), "Pulse: %dus", txPulseUs);
-    u8g2.drawStr(2, 50, buf);
-    u8g2.setFont(FONT_SMALL);
-    snprintf(buf, sizeof(buf), "TX:%lu  OK:send  UP/DN:proto", txCount);
-    u8g2.drawStr(0, 63, buf);
+    // List codes with checkboxes
+    for (uint8_t i = 0; i < 3 && i < codeCount; i++) {
+        uint8_t y = 16 + i * 16;
+        uint8_t idx = codeCount - 1 - i;
+        if (i == copyCursor) {
+            u8g2.drawBox(0, y - 12, OLED_WIDTH, 14);
+            u8g2.setDrawColor(0);
+        }
+
+        // Checkbox: [*] or [ ]
+        bool sel = selectedMask & (1 << idx);
+        u8g2.setFont(FONT_DATA);
+        u8g2.drawStr(2, y, sel ? "[*]" : "[ ]");
+
+        char buf[32];
+        snprintf(buf, sizeof(buf), "%lu %db %s", codes[idx].value,
+                 codes[idx].bitLength, protoName(codes[idx].protocol));
+        u8g2.drawStr(22, y, buf);
+
+        if (i == copyCursor) u8g2.setDrawColor(1);
+    }
+
+    // TX feedback flash
+    if (txFeedback && millis() - txFeedback < 500) {
+        u8g2.setFont(FONT_BIG);
+        u8g2.drawStr(30, 55, "Sent!");
+    }
 }
 
 // ============================================================
-// Draw — RF_RAW_EDIT
+// Draw — RF_CUSTOM_SEND (any Hz, ±1 short, ±10 long, OK=send)
 // ============================================================
-void Rf433Tool::drawRawEdit(U8G2& u8g2) {
-    drawCN(u8g2, 0, 12, "原始编辑");
-
-    // Binary display
-    char binBuf[40];
-    bitsToStr(txCode, txBits, binBuf, sizeof(binBuf));
-    u8g2.setFont(FONT_SMALL);
-    uint8_t y = 20;
-    for (uint8_t row = 0; row < 3 && row * 12 < txBits; row++) {
-        for (uint8_t col = 0; col < 12 && (row*12+col) < txBits; col++) {
-            uint8_t idx = row * 12 + col;
-            char c[2] = {binBuf[idx], '\0'};
-            int x = 4 + col * 10;
-            if (idx == txEditPos && txEditMode == 0) {
-                u8g2.drawBox(x - 1, y - 6, 9, 8);
-                u8g2.setDrawColor(0);
-                u8g2.drawStr(x, y, c);
-                u8g2.setDrawColor(1);
-            } else {
-                u8g2.drawStr(x, y, c);
-            }
-        }
-        y += 10;
-    }
-
-    char buf[40];
-    snprintf(buf, sizeof(buf), "P:%d Bits:%d PUL:%d",
-             txProto, txBits, txPulseUs);
+void Rf433Tool::drawCustomSend(U8G2& u8g2) {
+    // Fixed frequency (crystal-locked)
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(2, 50, buf);
+    u8g2.drawStr(2, 14, "Freq:433.92MHz(固定)");
 
-    const char* modeStr[3] = {"Bit", "Proto", "Pulse"};
-    snprintf(buf, sizeof(buf), "Mode:%s OK:send", modeStr[txEditMode]);
-    u8g2.drawStr(0, 63, buf);
+    // Code info
+    char buf[32];
+    snprintf(buf, sizeof(buf), "Code:%lu B:%d", txCode, txBits);
+    u8g2.drawStr(2, 28, buf);
+    snprintf(buf, sizeof(buf), "Proto:%s P:%dus", protoName(txProto), txPulseUs);
+    u8g2.drawStr(2, 38, buf);
+
+    // Controls
+    u8g2.setFont(FONT_SMALL);
+    u8g2.drawStr(0, 52, "Dbl+/-:proto  OK:send");
+
+    // TX feedback
+    if (txFeedback && millis() - txFeedback < 500) {
+        u8g2.setFont(FONT_BIG);
+        u8g2.drawStr(30, 58, "Sent!");
+    }
 }
 
 // ============================================================
 // Draw — RF_DEVDB
 // ============================================================
 void Rf433Tool::drawDevDb(U8G2& u8g2) {
-    drawCN(u8g2, 0, 12, "设备库");
-
     // Built-in device database
     static const struct { const char* name; unsigned long code; uint8_t bits; uint8_t proto; } db[RF433_DB_COUNT] = {
         {"EV1527 ID1",  0x556688, 24, 1},
@@ -555,7 +678,7 @@ void Rf433Tool::drawDevDb(U8G2& u8g2) {
         u8g2.drawStr(2, 44, bin);
         snprintf(buf, sizeof(buf), "Bits:%d P:%d", d.bits, d.proto);
         u8g2.drawStr(2, 54, buf);
-        u8g2.drawStr(0, 63, "OK:send  UP/DN:back");
+        u8g2.setFont(FONT_DATA);
     } else {
         for (uint8_t i = 0; i < 4 && i < RF433_DB_COUNT; i++) {
             uint8_t y = 22 + i * 11;
@@ -568,7 +691,6 @@ void Rf433Tool::drawDevDb(U8G2& u8g2) {
             if (i == dbCursor) u8g2.setDrawColor(1);
         }
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 63, "OK:detail  UP/DN");
     }
 }
 
@@ -576,13 +698,11 @@ void Rf433Tool::drawDevDb(U8G2& u8g2) {
 // Draw — RF_TEMP_SENSOR
 // ============================================================
 void Rf433Tool::drawTemp(U8G2& u8g2) {
-    drawCN(u8g2, 0, 12, "温度传感");
-
     if (tempVal == 0 && tempTs == 0) {
         drawCN(u8g2, 10, 38, "监听中...");
     } else {
         u8g2.setFont(FONT_BIG);
-        char buf[10];
+        char buf[32];
         snprintf(buf, sizeof(buf), "%.1fC", tempVal);
         uint8_t tw = u8g2.getStrWidth(buf);
         u8g2.drawStr((OLED_WIDTH - tw) / 2, 35, buf);
@@ -595,5 +715,4 @@ void Rf433Tool::drawTemp(U8G2& u8g2) {
         snprintf(buf, sizeof(buf), "Age:%lus", elapsed);
         u8g2.drawStr(2, 58, buf);
     }
-    u8g2.drawStr(0, 63, "OK:clear");
 }

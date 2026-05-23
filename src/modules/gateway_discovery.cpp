@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "gateway_discovery.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -39,7 +40,6 @@ void GatewayDiscovery::handleButton(ButtonEvent ev) {
 
 void GatewayDiscovery::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Gateway Discovery");
 
     u8g2.setFont(FONT_BODY);
     char buf[40];
@@ -58,5 +58,4 @@ void GatewayDiscovery::draw(U8G2& u8g2) {
              pingOk ? "OK" : "FAIL", pingOk ? pingRtt : -1);
     u8g2.drawStr(2, 54, buf);
 
-    u8g2.drawStr(0, 63, "OK to re-ping");
 }

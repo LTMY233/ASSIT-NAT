@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "file_manager.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -90,13 +91,11 @@ void FileManager::handleButton(ButtonEvent ev) {
 
 void FileManager::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "File Manager");
 
     if (fileCount == 0) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 30, "No files found");
+        drawCN(u8g2, 2, 30, "未发现文件");
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 63, "OK=refresh");
         return;
     }
 
@@ -104,16 +103,15 @@ void FileManager::draw(U8G2& u8g2) {
         u8g2.setFont(FONT_BODY);
         u8g2.drawStr(2, 30, infoText);
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 63, "Any key=back");
+        drawCN(u8g2, 0, 63, "任意键返回");
         return;
     }
 
     if (confirmDelete) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(2, 28, "Delete this file?");
+        drawCN(u8g2, 2, 28, "删除此文件?");
         u8g2.drawStr(2, 36, fileNames[selectedIdx]);
         u8g2.setFont(FONT_DATA);
-        u8g2.drawStr(0, 63, "OK=confirm UP/DN=cancel");
         return;
     }
 
@@ -134,7 +132,7 @@ void FileManager::draw(U8G2& u8g2) {
     }
 
     u8g2.setFont(FONT_DATA);
-    snprintf(infoText, sizeof(infoText), "%u files OK=del",
+    snprintf(infoText, sizeof(infoText), "%u个文件 OK=删除",
              fileCount);
     u8g2.drawStr(0, 63, infoText);
 }

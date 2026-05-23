@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "channel_quality.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -89,11 +90,10 @@ void ChannelQuality::handleButton(ButtonEvent ev) {
 
 void ChannelQuality::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "Channel Quality");
 
     if (!hasData) {
         u8g2.setFont(FONT_BODY);
-        u8g2.drawStr(10, 35, "Scanning...");
+        drawCN(u8g2, 10, 35, "扫描中...");
         return;
     }
 
@@ -101,8 +101,8 @@ void ChannelQuality::draw(U8G2& u8g2) {
 
     // Recommended channel (large text)
     char buf[30];
-    snprintf(buf, sizeof(buf), "Best: CH %d (Score:%d)", bestChannel, channels[bestChannel - 1].score);
-    u8g2.drawStr(2, 24, buf);
+    snprintf(buf, sizeof(buf), "选:CH%d (分:%d)", bestChannel, channels[bestChannel - 1].score);
+    drawCN(u8g2, 2, 24, buf);
 
     // 13 channel score bars
     for (uint8_t i = 0; i < 13; i++) {
@@ -121,5 +121,5 @@ void ChannelQuality::draw(U8G2& u8g2) {
         u8g2.drawStr(x, baseY + 8, chBuf);
     }
 
-    u8g2.drawStr(0, 63, "OK to rescan");
+    drawCN(u8g2, 0, 63, "按OK重扫");
 }

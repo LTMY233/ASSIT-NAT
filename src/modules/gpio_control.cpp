@@ -1,3 +1,4 @@
+#include "../chinese_glyphs.h"
 #include "gpio_control.h"
 #include "../config.h"
 #include "../core/display_mgr.h"
@@ -103,7 +104,6 @@ void GpioControl::handleButton(ButtonEvent ev) {
 
 void GpioControl::draw(U8G2& u8g2) {
     u8g2.setFont(FONT_DATA);
-    u8g2.drawStr(0, 9, "GPIO Control");
 
     // Pin indicator
     u8g2.setFont(FONT_BIG);
@@ -112,23 +112,19 @@ void GpioControl::draw(U8G2& u8g2) {
     uint8_t tw = u8g2.getStrWidth(buf);
     u8g2.drawStr((OLED_WIDTH - tw) / 2, 30, buf);
 
-    // State display
+    // Mode display
     u8g2.setFont(FONT_DATA);
+    drawCN(u8g2, 2, 44, "模式:");
     const char* modeStr = pinMode_[selectedPin] ? "OUTPUT" : "INPUT";
-    const char* stateStr;
+    u8g2.drawStr(2 + cnStrWidth("模式:"), 44, modeStr);
+
+    // State display
+    u8g2.drawStr(2, 54, "State:");
     if (!pinMode_[selectedPin]) {
         readPin(selectedPin);
-        stateStr = pinState_[selectedPin] ? "HIGH" : "LOW";
-    } else {
-        stateStr = pinState_[selectedPin] ? "HIGH" : "LOW";
     }
-
-    snprintf(buf, sizeof(buf), "Mode:%s", modeStr);
-    u8g2.drawStr(2, 44, buf);
-
-    snprintf(buf, sizeof(buf), "State:%s", stateStr);
-    u8g2.drawStr(2, 54, buf);
+    const char* stateStr = pinState_[selectedPin] ? "HIGH" : "LOW";
+    u8g2.drawStr(2 + u8g2.getStrWidth("State:"), 54, stateStr);
 
     // Footer
-    u8g2.drawStr(0, 63, editMode ? "EDIT: UP/DN toggle" : "OK:mode OKx2:edit");
 }
